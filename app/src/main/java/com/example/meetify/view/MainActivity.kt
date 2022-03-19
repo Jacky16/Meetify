@@ -13,14 +13,17 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater);
         setContentView(binding.root)
 
-        binding.bottomNavigation.setOnItemReselectedListener { item ->
-            when(item.itemId) {
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
                 R.id.home -> {
                     findNavController(binding.navHostFragment.id).navigate(R.id.homeFragment)
+                    true
                 }
-                R.id.map -> {
-
+                R.id.mapFragment -> {
+                    findNavController(binding.navHostFragment.id).navigate(R.id.searchFragment)
+                    true
                 }
+                else -> false
             }
         }
     }
