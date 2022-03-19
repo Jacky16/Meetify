@@ -6,12 +6,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.meetify.R
 import com.example.meetify.databinding.HomeFragmentBinding
 import com.example.meetify.model.MeetProvider
 import com.example.meetify.view.adapters.MeetAdapter
+import com.example.meetify.viewmodel.HomeViewModel
 
 class HomeFragment : Fragment() {
 

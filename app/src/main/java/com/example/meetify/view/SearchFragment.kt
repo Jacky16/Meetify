@@ -1,6 +1,7 @@
 package com.example.meetify.view
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
@@ -8,10 +9,13 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import com.example.meetify.R
 import com.example.meetify.databinding.SearchFragmentBinding
+import com.example.meetify.model.DefaultClusterRenderer
+import com.example.meetify.model.MeetProvider
+import com.example.meetify.model.MyMeetCluster
+import com.example.meetify.viewmodel.SearchViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -19,6 +23,9 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.maps.android.clustering.ClusterManager
 
 class SearchFragment : Fragment(), OnMapReadyCallback {
 
@@ -29,6 +36,8 @@ class SearchFragment : Fragment(), OnMapReadyCallback {
     private lateinit var googleMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var currentLocation: LatLng? = null
+    private lateinit var clusterManager: ClusterManager<MyMeetCluster?>
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -41,7 +50,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
+
         createMapFragment()
         onClickButtonLocation()
     }
@@ -56,7 +65,8 @@ class SearchFragment : Fragment(), OnMapReadyCallback {
         googleMap = _map
         setUpMap()
         enableLocation()
-
+        setUpClusterer()
+        //addItems()
     }
 
     //region Main functions
@@ -96,6 +106,35 @@ class SearchFragment : Fragment(), OnMapReadyCallback {
     //endregion
 
     //region Inits functions
+
+    @SuppressLint("PotentialBehaviorOverride")
+    private fun setUpClusterer() {
+        // Position the map.
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(51.503186, -0.126446), 10f))
+
+        // Initialize the manager with the context and the map.
+        // (Activity extends context, so we can pass 'this' in the constructor.)
+        clusterManager = ClusterManager(context, googleMap)
+
+        //Modificanco el renderer de los clusters por uno custom
+        val clusterRenderer = DefaultClusterRenderer(context,googleMap, clusterManager)
+        clusterManager.setRenderer(clusterRenderer)
+
+        // Point the map's listeners at the listeners implemented by the cluster
+        googleMap.setOnCameraIdleListener(clusterManager)
+        googleMap.setOnMarkerClickListener(clusterManager)
+
+        // Add cluster items (markers) to the cluster manager.
+        addItems()
+    }
+
+    fun addItems() {
+        MeetProvider.getMeets().forEach { meetToAdd ->
+            clusterManager.addItem( MyMeetCluster(meetToAdd))
+        }
+
+    }
+
     private fun setUpMap() {
         googleMap.uiSettings.isMyLocationButtonEnabled = false
         googleMap.uiSettings.isRotateGesturesEnabled = false
@@ -105,6 +144,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun createMapFragment() {
+
         val mapFragment: SupportMapFragment =
             childFragmentManager.findFragmentById(R.id.mapFragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -138,6 +178,8 @@ class SearchFragment : Fragment(), OnMapReadyCallback {
             }
         }
     }
+
+
     //endregion FU functions_functions
 
 }

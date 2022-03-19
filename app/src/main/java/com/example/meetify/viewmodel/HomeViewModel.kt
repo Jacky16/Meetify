@@ -1,4 +1,4 @@
-package com.example.meetify.view
+package com.example.meetify.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
