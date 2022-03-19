@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import com.example.meetify.R
 import com.example.meetify.databinding.SearchFragmentBinding
@@ -27,7 +28,7 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.maps.android.clustering.ClusterManager
 
-class SearchFragment : Fragment(), OnMapReadyCallback {
+class SearchFragment : Fragment(), OnMapReadyCallback,ClusterManager.OnClusterItemClickListener<MyMeetCluster?> {
 
     private lateinit var viewModel: SearchViewModel
     lateinit var binding: SearchFragmentBinding
@@ -66,10 +67,15 @@ class SearchFragment : Fragment(), OnMapReadyCallback {
         setUpMap()
         enableLocation()
         setUpClusterer()
-        //addItems()
+        
     }
 
     //region Main functions
+
+    override fun onClusterItemClick(item: MyMeetCluster?): Boolean {
+        Toast.makeText(context, item?.getMeet()?.name, Toast.LENGTH_SHORT).show()
+        return true
+    }
     private fun onClickButtonLocation() {
         binding.btnCurrentLocation.setOnClickListener {
             moveToCurrentLocation()
@@ -107,7 +113,6 @@ class SearchFragment : Fragment(), OnMapReadyCallback {
 
     //region Inits functions
 
-    @SuppressLint("PotentialBehaviorOverride")
     private fun setUpClusterer() {
         // Position the map.
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(51.503186, -0.126446), 10f))
@@ -122,7 +127,8 @@ class SearchFragment : Fragment(), OnMapReadyCallback {
 
         // Point the map's listeners at the listeners implemented by the cluster
         googleMap.setOnCameraIdleListener(clusterManager)
-        googleMap.setOnMarkerClickListener(clusterManager)
+
+        clusterManager.setOnClusterItemClickListener(this)
 
         // Add cluster items (markers) to the cluster manager.
         addItems()
@@ -178,7 +184,6 @@ class SearchFragment : Fragment(), OnMapReadyCallback {
             }
         }
     }
-
 
     //endregion FU functions_functions
 
