@@ -1,7 +1,6 @@
 package com.example.meetify.view
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
@@ -9,13 +8,12 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import com.example.meetify.R
 import com.example.meetify.databinding.SearchFragmentBinding
-import com.example.meetify.model.DefaultClusterRenderer
+import com.example.meetify.model.clusters.DefaultClusterRenderer
 import com.example.meetify.model.MeetProvider
-import com.example.meetify.model.MyMeetCluster
+import com.example.meetify.model.clusters.MyMeetCluster
 import com.example.meetify.viewmodel.SearchViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -24,11 +22,11 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.maps.android.clustering.ClusterManager
 
-class SearchFragment : Fragment(), OnMapReadyCallback,ClusterManager.OnClusterItemClickListener<MyMeetCluster?> {
+class SearchFragment : Fragment(), OnMapReadyCallback,
+    ClusterManager.OnClusterItemClickListener<MyMeetCluster?> {
 
     private lateinit var viewModel: SearchViewModel
     lateinit var binding: SearchFragmentBinding
@@ -54,6 +52,8 @@ class SearchFragment : Fragment(), OnMapReadyCallback,ClusterManager.OnClusterIt
 
         createMapFragment()
         onClickButtonLocation()
+
+        collapseBottomSheetInfoMeet()
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -67,18 +67,38 @@ class SearchFragment : Fragment(), OnMapReadyCallback,ClusterManager.OnClusterIt
         setUpMap()
         enableLocation()
         setUpClusterer()
-        
+
+        googleMap.setOnMapClickListener {
+            collapseBottomSheetInfoMeet()
+        }
     }
+
 
     //region Main functions
 
     override fun onClusterItemClick(item: MyMeetCluster?): Boolean {
-        Toast.makeText(context, item?.getMeet()?.name, Toast.LENGTH_SHORT).show()
+        BottomSheetBehavior.from(binding.bsInfoMeetInclude.bsMeet).apply {
+            peekHeight = 550
+            this.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+        setInfoOnBottomSheetMeet(item)
         return true
     }
+
     private fun onClickButtonLocation() {
         binding.btnCurrentLocation.setOnClickListener {
             moveToCurrentLocation()
+        }
+    }
+
+    private fun setInfoOnBottomSheetMeet(item: MyMeetCluster?) {
+        item?.getMeet()?.let {
+            val bind = binding.bsInfoMeetInclude
+            bind.tvTitleMeet.text = it.name
+            bind.tvDescMeet.text = it.description
+            bind.tvHour.text = it.hour.toString() + ":00"
+            bind.tvPeopleCount.text = it.persons.size.toString()
+
         }
     }
 
@@ -109,6 +129,14 @@ class SearchFragment : Fragment(), OnMapReadyCallback,ClusterManager.OnClusterIt
         }
     }
 
+    private fun collapseBottomSheetInfoMeet() {
+        BottomSheetBehavior.from(binding.bsInfoMeetInclude.bsMeet).apply {
+            peekHeight = 0
+            this.state = BottomSheetBehavior.STATE_HIDDEN
+            this.isHideable = true
+        }
+    }
+
     //endregion
 
     //region Inits functions
@@ -122,7 +150,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,ClusterManager.OnClusterIt
         clusterManager = ClusterManager(context, googleMap)
 
         //Modificanco el renderer de los clusters por uno custom
-        val clusterRenderer = DefaultClusterRenderer(context,googleMap, clusterManager)
+        val clusterRenderer = DefaultClusterRenderer(context, googleMap, clusterManager)
         clusterManager.setRenderer(clusterRenderer)
 
         // Point the map's listeners at the listeners implemented by the cluster
@@ -136,7 +164,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,ClusterManager.OnClusterIt
 
     fun addItems() {
         MeetProvider.getMeets().forEach { meetToAdd ->
-            clusterManager.addItem( MyMeetCluster(meetToAdd))
+            clusterManager.addItem(MyMeetCluster(meetToAdd))
         }
 
     }

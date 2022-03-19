@@ -1,14 +1,15 @@
-package com.example.meetify.model
+package com.example.meetify.model.clusters
 
+import com.example.meetify.model.MeetModel
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.clustering.ClusterItem
 
 class MyMeetCluster(
     meet: MeetModel
 ) : ClusterItem {
-    private val myMeet:MeetModel
+    private val myMeet: MeetModel
 
-    public fun getMeet():MeetModel{
+    public fun getMeet(): MeetModel {
         return myMeet
     }
 
