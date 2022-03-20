@@ -2,9 +2,7 @@ package com.example.meetify.view
 
 import android.Manifest
 import android.content.pm.PackageManager
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,10 +10,13 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.getSystemService
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.example.meetify.R
 import com.example.meetify.databinding.SearchFragmentBinding
-import com.example.meetify.model.clusters.DefaultClusterRenderer
+import com.example.meetify.model.MeetModel
 import com.example.meetify.model.MeetProvider
+import com.example.meetify.model.clusters.DefaultClusterRenderer
 import com.example.meetify.model.clusters.MyMeetCluster
 import com.example.meetify.viewmodel.SearchViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -28,8 +29,11 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat
 import com.google.maps.android.clustering.ClusterManager
+import java.util.*
 
 class SearchFragment : Fragment(), OnMapReadyCallback,
     ClusterManager.OnClusterItemClickListener<MyMeetCluster?> {
@@ -42,7 +46,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var currentLocation: LatLng? = null
     private lateinit var clusterManager: ClusterManager<MyMeetCluster?>
-    var placeHolderMarker: Marker? = null
+    var meetToAdd: MeetModel = MeetModel(0, "", 0, 0, 0, "", LatLng(1.0, 1.0))
 
 
     override fun onCreateView(
@@ -61,6 +65,74 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         onClickButtonLocation()
         collapseBottomSheetInfoMeet()
         bottomSheetCreateMeetManager()
+
+        binding.bsCreateMeetInclude.titlDate.setFocusable(false)
+        binding.bsCreateMeetInclude.titlHour.setFocusable(false)
+
+
+        //Collect the date selected
+        initInfoOfBottomSheetCreateMeet()
+
+    }
+
+    private fun initInfoOfBottomSheetCreateMeet() {
+
+        //Name
+        meetToAdd.name = binding.bsCreateMeetInclude.titlNameMeet.text.toString()
+
+        //Description
+        meetToAdd.description = binding.bsCreateMeetInclude.titlDescriptionMeet.text.toString()
+
+        //Date
+        binding.bsCreateMeetInclude.titlDate.setOnClickListener {
+            val datePicker =
+                MaterialDatePicker.Builder.datePicker()
+                    .setTitleText("Select date")
+                    .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                    .build()
+            datePicker.show(this.childFragmentManager, "DATE_PICKER")
+
+            datePicker.addOnPositiveButtonClickListener {
+                val date = Date(it)
+                val dateString = "${date.date}/${date.month}/${date.year}"
+                binding.bsCreateMeetInclude.titlDate.setText(dateString)
+                meetToAdd.date = date.day.toInt()
+            }
+        }
+
+        //Hour
+        binding.bsCreateMeetInclude.titlHour.setOnClickListener {
+            val hourPicker =
+                MaterialTimePicker.Builder()
+                    .setTimeFormat(TimeFormat.CLOCK_12H)
+                    .setHour(12)
+                    .setMinute(10)
+                    .setTitleText("Select a time")
+                    .build()
+            hourPicker.show(childFragmentManager, "HOUR_PICKER")
+            hourPicker.addOnPositiveButtonClickListener {
+                val hourString = "${hourPicker.hour}:${hourPicker.minute}"
+                Toast.makeText(context, hourString, Toast.LENGTH_SHORT).show()
+                binding.bsCreateMeetInclude.titlHour.setText(hourString)
+                meetToAdd.hour = hourPicker.hour
+            }
+        }
+
+        //Button Done
+        binding.bsCreateMeetInclude.btnCreateMeet.setOnClickListener {
+            BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
+                this.state = BottomSheetBehavior.STATE_HIDDEN
+
+            }
+            MeetProvider.addMeet(meetToAdd)
+            addMarkersMeets()
+
+        }
+        binding.bsCreateMeetInclude.btnCancelCreateMeet.setOnClickListener {
+            BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
+                this.state = BottomSheetBehavior.STATE_HIDDEN
+            }
+        }
 
     }
 
@@ -82,11 +154,65 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         }
         googleMap.setOnMapLongClickListener {
             expandeBottomSheetCreateMeet()
-            placeHolderMarker = googleMap.addMarker(MarkerOptions().position(it))
         }
 
     }
 
+    //region BottomSheet Create Meet functions
+    private fun bottomSheetCreateMeetManager() {
+        val b = object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                when (newState) {
+                    2 -> {
+                        closeKeyBoard()
+                    }
+                }
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+
+            }
+        }
+        BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
+            peekHeight = 0
+            this.state = BottomSheetBehavior.STATE_HIDDEN
+            this.isHideable = true
+
+        }.addBottomSheetCallback(b)
+    }
+
+    private fun expandeBottomSheetCreateMeet() {
+        BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
+            this.state = BottomSheetBehavior.STATE_EXPANDED
+            this.setPeekHeight(1000)
+
+        }
+    }
+
+    //endregion
+
+    //region BottomSheet Info Meet functions
+    private fun collapseBottomSheetInfoMeet() {
+        BottomSheetBehavior.from(binding.bsInfoMeetInclude.bsMeet).apply {
+            peekHeight = 0
+            this.state = BottomSheetBehavior.STATE_HIDDEN
+            this.isHideable = true
+
+        }
+    }
+
+    private fun setInfoOnBottomSheetMeet(item: MyMeetCluster?) {
+        item?.getMeet()?.let {
+            val bind = binding.bsInfoMeetInclude
+            bind.tvTitleMeet.text = it.name
+            bind.tvDescMeet.text = it.description
+            bind.tvHour.text = it.hour.toString() + ":00"
+            bind.tvPeopleCount.text = it.persons.size.toString()
+
+        }
+    }
+
+    //endregion
 
     //region Main functions
 
@@ -105,16 +231,6 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         }
     }
 
-    private fun setInfoOnBottomSheetMeet(item: MyMeetCluster?) {
-        item?.getMeet()?.let {
-            val bind = binding.bsInfoMeetInclude
-            bind.tvTitleMeet.text = it.name
-            bind.tvDescMeet.text = it.description
-            bind.tvHour.text = it.hour.toString() + ":00"
-            bind.tvPeopleCount.text = it.persons.size.toString()
-
-        }
-    }
 
     fun moveToCurrentLocation() {
         if (ActivityCompat.checkSelfPermission(
@@ -143,14 +259,6 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         }
     }
 
-    private fun collapseBottomSheetInfoMeet() {
-        BottomSheetBehavior.from(binding.bsInfoMeetInclude.bsMeet).apply {
-            peekHeight = 0
-            this.state = BottomSheetBehavior.STATE_HIDDEN
-            this.isHideable = true
-
-        }
-    }
 
     private fun closeKeyBoard() {
         val view = this.requireActivity().currentFocus
@@ -163,37 +271,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         }
     }
 
-    private fun bottomSheetCreateMeetManager() {
-        val b = object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                when (newState) {
-                    2 -> {
-                        closeKeyBoard()
-                        placeHolderMarker?.remove()
-                        Toast.makeText(context,bottomSheet.findViewById<TextInputEditText>(R.id.titl_name_meet).text, Toast.LENGTH_SHORT).show()
 
-                    }
-                }
-            }
-
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-
-            }
-        }
-        BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
-            peekHeight = 0
-            this.state = BottomSheetBehavior.STATE_HIDDEN
-            this.isHideable = true
-        }.addBottomSheetCallback(b)
-    }
-
-    private fun expandeBottomSheetCreateMeet() {
-        BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
-            this.state = BottomSheetBehavior.STATE_EXPANDED
-            this.setPeekHeight(1000)
-
-        }
-    }
     //endregion
 
     //region Inits functions
@@ -220,6 +298,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
     }
 
     fun addMarkersMeets() {
+        clusterManager.clearItems()
         MeetProvider.getMeets().forEach { meetToAdd ->
             clusterManager.addItem(MyMeetCluster(meetToAdd))
         }
@@ -234,7 +313,6 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
     }
 
     private fun createMapFragment() {
-
         val mapFragment: SupportMapFragment =
             childFragmentManager.findFragmentById(R.id.mapFragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
