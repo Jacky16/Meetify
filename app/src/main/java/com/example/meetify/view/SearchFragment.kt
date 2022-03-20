@@ -8,7 +8,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat.getSystemService
 import com.example.meetify.R
 import com.example.meetify.databinding.SearchFragmentBinding
 import com.example.meetify.model.clusters.DefaultClusterRenderer
@@ -22,6 +24,8 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.maps.android.clustering.ClusterManager
 
@@ -36,6 +40,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var currentLocation: LatLng? = null
     private lateinit var clusterManager: ClusterManager<MyMeetCluster?>
+    var placeHolderMarker: Marker? = null
 
 
     override fun onCreateView(
@@ -52,9 +57,11 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
 
         createMapFragment()
         onClickButtonLocation()
-
         collapseBottomSheetInfoMeet()
+        bottomSheetCreateMeetManager()
+
     }
+
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -71,6 +78,11 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         googleMap.setOnMapClickListener {
             collapseBottomSheetInfoMeet()
         }
+        googleMap.setOnMapLongClickListener {
+            expandeBottomSheetCreateMeet()
+            placeHolderMarker = googleMap.addMarker(MarkerOptions().position(it))
+        }
+
     }
 
 
@@ -137,6 +149,44 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         }
     }
 
+    private fun closeKeyBoard() {
+        val view = this.requireActivity().currentFocus
+        if (view != null) {
+            val imm = getSystemService(
+                requireContext(),
+                InputMethodManager::class.java
+            ) as InputMethodManager
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
+        }
+    }
+
+    private fun bottomSheetCreateMeetManager() {
+        val b = object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                when (newState) {
+                    2 -> {
+                        closeKeyBoard()
+                        placeHolderMarker?.remove()
+                    }
+                }
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+
+            }
+        }
+        BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
+            peekHeight = 0
+            this.state = BottomSheetBehavior.STATE_HIDDEN
+            this.isHideable = true
+        }.addBottomSheetCallback(b)
+    }
+
+    private fun expandeBottomSheetCreateMeet() {
+        BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
+            this.state = BottomSheetBehavior.STATE_EXPANDED
+        }
+    }
     //endregion
 
     //region Inits functions
@@ -159,14 +209,13 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         clusterManager.setOnClusterItemClickListener(this)
 
         // Add cluster items (markers) to the cluster manager.
-        addItems()
+        addMarkersMeets()
     }
 
-    fun addItems() {
+    fun addMarkersMeets() {
         MeetProvider.getMeets().forEach { meetToAdd ->
             clusterManager.addItem(MyMeetCluster(meetToAdd))
         }
-
     }
 
     private fun setUpMap() {
