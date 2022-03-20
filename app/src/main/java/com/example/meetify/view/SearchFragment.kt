@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.getSystemService
 import com.example.meetify.R
@@ -27,6 +28,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.textfield.TextInputEditText
 import com.google.maps.android.clustering.ClusterManager
 
 class SearchFragment : Fragment(), OnMapReadyCallback,
@@ -146,6 +148,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
             peekHeight = 0
             this.state = BottomSheetBehavior.STATE_HIDDEN
             this.isHideable = true
+
         }
     }
 
@@ -167,6 +170,8 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
                     2 -> {
                         closeKeyBoard()
                         placeHolderMarker?.remove()
+                        Toast.makeText(context,bottomSheet.findViewById<TextInputEditText>(R.id.titl_name_meet).text, Toast.LENGTH_SHORT).show()
+
                     }
                 }
             }
@@ -185,6 +190,8 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
     private fun expandeBottomSheetCreateMeet() {
         BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
             this.state = BottomSheetBehavior.STATE_EXPANDED
+            this.setPeekHeight(1000)
+
         }
     }
     //endregion
