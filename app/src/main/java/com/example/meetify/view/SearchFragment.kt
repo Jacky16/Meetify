@@ -26,8 +26,6 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -46,8 +44,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var currentLocation: LatLng? = null
     private lateinit var clusterManager: ClusterManager<MyMeetCluster?>
-    var meetToAdd: MeetModel = MeetModel(0, "", 0, 0, 0, "", LatLng(1.0, 1.0))
-
+    var meetToAdd: MeetModel? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -64,75 +61,28 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         createMapFragment()
         onClickButtonLocation()
         collapseBottomSheetInfoMeet()
-        bottomSheetCreateMeetManager()
+        initBottomSheetCreateMeet()
 
         binding.bsCreateMeetInclude.titlDate.setFocusable(false)
         binding.bsCreateMeetInclude.titlHour.setFocusable(false)
 
 
         //Collect the date selected
-        initInfoOfBottomSheetCreateMeet()
+        initBottomSheetCreateMeet()
 
+
+        bottomSheetCreateMeetManager()
     }
 
-    private fun initInfoOfBottomSheetCreateMeet() {
+
+
+    private fun setInfoOnBottomSheetCreateMeet() {
 
         //Name
-        meetToAdd.name = binding.bsCreateMeetInclude.titlNameMeet.text.toString()
+        meetToAdd?.name = binding.bsCreateMeetInclude.titlNameMeet.text.toString()
 
         //Description
-        meetToAdd.description = binding.bsCreateMeetInclude.titlDescriptionMeet.text.toString()
-
-        //Date
-        binding.bsCreateMeetInclude.titlDate.setOnClickListener {
-            val datePicker =
-                MaterialDatePicker.Builder.datePicker()
-                    .setTitleText("Select date")
-                    .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
-                    .build()
-            datePicker.show(this.childFragmentManager, "DATE_PICKER")
-
-            datePicker.addOnPositiveButtonClickListener {
-                val date = Date(it)
-                val dateString = "${date.date}/${date.month}/${date.year}"
-                binding.bsCreateMeetInclude.titlDate.setText(dateString)
-                meetToAdd.date = date.day.toInt()
-            }
-        }
-
-        //Hour
-        binding.bsCreateMeetInclude.titlHour.setOnClickListener {
-            val hourPicker =
-                MaterialTimePicker.Builder()
-                    .setTimeFormat(TimeFormat.CLOCK_12H)
-                    .setHour(12)
-                    .setMinute(10)
-                    .setTitleText("Select a time")
-                    .build()
-            hourPicker.show(childFragmentManager, "HOUR_PICKER")
-            hourPicker.addOnPositiveButtonClickListener {
-                val hourString = "${hourPicker.hour}:${hourPicker.minute}"
-                Toast.makeText(context, hourString, Toast.LENGTH_SHORT).show()
-                binding.bsCreateMeetInclude.titlHour.setText(hourString)
-                meetToAdd.hour = hourPicker.hour
-            }
-        }
-
-        //Button Done
-        binding.bsCreateMeetInclude.btnCreateMeet.setOnClickListener {
-            BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
-                this.state = BottomSheetBehavior.STATE_HIDDEN
-
-            }
-            MeetProvider.addMeet(meetToAdd)
-            addMarkersMeets()
-
-        }
-        binding.bsCreateMeetInclude.btnCancelCreateMeet.setOnClickListener {
-            BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
-                this.state = BottomSheetBehavior.STATE_HIDDEN
-            }
-        }
+        meetToAdd?.description = binding.bsCreateMeetInclude.titlDescriptionMeet.text.toString()
 
     }
 
@@ -154,16 +104,89 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         }
         googleMap.setOnMapLongClickListener {
             expandeBottomSheetCreateMeet()
+            meetToAdd = MeetModel()
+            meetToAdd?.position = it
         }
 
     }
 
     //region BottomSheet Create Meet functions
     private fun bottomSheetCreateMeetManager() {
+
+        //Button Done
+        binding.bsCreateMeetInclude.btnCreateMeet.setOnClickListener {
+            BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
+                this.state = BottomSheetBehavior.STATE_HIDDEN
+
+            }
+            //Init the info to meetToAdd
+            setInfoOnBottomSheetCreateMeet()
+
+            //Add the Meet in List and Map
+            meetToAdd.let {
+                clusterManager.addItem(MyMeetCluster(it!!))
+                MeetProvider.addMeet(it)
+                clusterManager.cluster()
+            }
+
+
+        }
+        //Cancel Button
+        binding.bsCreateMeetInclude.btnCancelCreateMeet.setOnClickListener {
+            BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
+                this.state = BottomSheetBehavior.STATE_HIDDEN
+            }
+        }
+        
+        //Date picker
+        binding.bsCreateMeetInclude.titlDate.setOnClickListener {
+            val datePicker =
+                MaterialDatePicker.Builder.datePicker()
+                    .setTitleText("Select date")
+                    .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                    .build()
+            datePicker.show(this.childFragmentManager, "DATE_PICKER")
+
+            datePicker.addOnPositiveButtonClickListener {
+                val date = Date(it)
+                val dateString = "${date.date}/${date.month}/${date.year}"
+                binding.bsCreateMeetInclude.titlDate.setText(dateString)
+                meetToAdd?.date = date.day.toInt()
+            }
+        }
+
+        //Hour picker
+        binding.bsCreateMeetInclude.titlHour.setOnClickListener {
+            val hourPicker =
+                MaterialTimePicker.Builder()
+                    .setTimeFormat(TimeFormat.CLOCK_12H)
+                    .setHour(12)
+                    .setMinute(10)
+                    .setTitleText("Select a time")
+                    .build()
+            hourPicker.show(childFragmentManager, "HOUR_PICKER")
+            hourPicker.addOnPositiveButtonClickListener {
+                val hourString = "${hourPicker.hour}:${hourPicker.minute}"
+                Toast.makeText(context, hourString, Toast.LENGTH_SHORT).show()
+                binding.bsCreateMeetInclude.titlHour.setText(hourString)
+                meetToAdd?.hour = hourPicker.hour
+            }
+        }
+    }
+
+    private fun expandeBottomSheetCreateMeet() {
+        BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
+            this.state = BottomSheetBehavior.STATE_EXPANDED
+            this.setPeekHeight(1000)
+
+        }
+    }
+
+    private fun initBottomSheetCreateMeet() {
         val b = object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when (newState) {
-                    2 -> {
+                    BottomSheetBehavior.STATE_HIDDEN -> {
                         closeKeyBoard()
                     }
                 }
@@ -174,20 +197,14 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
             }
         }
         BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
-            peekHeight = 0
             this.state = BottomSheetBehavior.STATE_HIDDEN
+            peekHeight = 0
             this.isHideable = true
+            this.skipCollapsed = true
 
         }.addBottomSheetCallback(b)
     }
 
-    private fun expandeBottomSheetCreateMeet() {
-        BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
-            this.state = BottomSheetBehavior.STATE_EXPANDED
-            this.setPeekHeight(1000)
-
-        }
-    }
 
     //endregion
 

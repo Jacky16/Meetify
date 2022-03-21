@@ -13,11 +13,8 @@
         android:background="@drawable/rounded_background_bottom_sheet"
         android:translationZ="20dp"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-        app:layout_constraintBottom_toBottomOf="parent
-"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-
-
         app:layout_constraintStart_toStartOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -36,7 +33,7 @@
 
             <TextView
                 android:id="@+id/tv_titleMeet"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start|top"
                 android:layout_marginStart="16dp"
@@ -100,6 +97,7 @@
                 android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eget pellentesque ipsum, in volutpat velit. Cras tincidunt turpis diam, at."
                 android:textAlignment="center"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/btn_join_in" />
         </androidx.constraintlayout.widget.ConstraintLayout>

@@ -20,6 +20,7 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.mapFragment -> {
+
                     findNavController(binding.navHostFragment.id).navigate(R.id.searchFragment)
                     true
                 }
