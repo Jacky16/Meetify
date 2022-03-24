@@ -205,7 +205,6 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         }.addBottomSheetCallback(b)
     }
 
-
     //endregion
 
     //region BottomSheet Info Meet functions
