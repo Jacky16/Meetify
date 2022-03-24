@@ -28,29 +28,44 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback {
         binding = ActivityMeetBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        getExtras()
+
+        initRecyclerView()
+
+        initInfoMeet()
+
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
+        mapFragment?.getMapAsync(this)
+
+        //Button back
+        binding.btnBack.setOnClickListener {
+            finish()
+        }
+
+
+    }
+
+    private fun initRecyclerView() {
+        recyclerView = binding.recyclerView
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        val adapter = PersonAdapter(meet.persons)
+        recyclerView.adapter = adapter
+    }
+
+    private fun getExtras() {
         val extras = intent.extras
 
         val id = extras?.getInt("idMeet")
         meet = MeetProvider.getMeets().find {
             it.id == id
         }!!
+    }
 
-        recyclerView = binding.recyclerView
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        val adapter = PersonAdapter(meet.persons)
-        recyclerView.adapter = adapter
+    private fun initInfoMeet() {
         binding.tvTitleMeet.text = meet.name.toString()
         binding.tvHourMeet.text = meet.hour.toString() + ":00"
         binding.tvDescMeet.text = meet.description.toString()
-
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
-        mapFragment?.getMapAsync(this)
-
-        binding.btnBack.setOnClickListener {
-            finish()
-        }
-
-
     }
 
 
@@ -62,6 +77,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback {
                 .position(meet.position)
                 .title(meet.name)
         )
+
         googleMap.moveCamera(
             CameraUpdateFactory.newLatLngZoom(
                 LatLng(
@@ -70,7 +86,6 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback {
                 ), 18f
             )
         )
-
         binding.btnLocation.setOnClickListener {
             googleMap.animateCamera(
                 CameraUpdateFactory.newLatLngZoom(meet.position, 18f),
