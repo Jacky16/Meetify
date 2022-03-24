@@ -1,12 +1,16 @@
 package com.example.meetify.view.adapters
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.meetify.MeetActivity
 import com.example.meetify.R
+import com.example.meetify.databinding.ItemMeetBinding
+import com.example.meetify.databinding.ItemPersonBinding
 import com.example.meetify.model.MeetModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -16,18 +20,23 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 
 
-class MeetAdapter(val meetList:List<MeetModel>):RecyclerView.Adapter<MeetAdapter.MeetHolder>() {
+class MeetAdapter(val meetList: List<MeetModel>) : RecyclerView.Adapter<MeetAdapter.MeetHolder>() {
 
-    inner class MeetHolder(val view: View):RecyclerView.ViewHolder(view){
+    inner class MeetHolder(val view: View) : RecyclerView.ViewHolder(view) {
+        val binding = ItemMeetBinding.bind(view)
 
+        fun render(meet: MeetModel) {
+            binding.tvtitle.text = meet.name
+            binding.tvPeopleCount.text = meet.people.toString()
+            binding.tvHour.text = meet.hour.toString() + ":00"
 
-        fun render(meet:MeetModel){
-            view.findViewById<TextView>(R.id.tvtitle).text = meet.name
-            view.findViewById<TextView>(R.id.tv_people_count).text = meet.people.toString()
-            view.findViewById<TextView>(R.id.tv_hour).text = meet.hour.toString() + ":00"
+            binding.btnJoinMeet.setOnClickListener {
 
-            view.findViewById<Button>(R.id.btn_join_meet).setOnClickListener {
-
+            }
+            view.setOnClickListener {
+                val intent = Intent(view.context, MeetActivity::class.java);
+                intent.putExtra("idMeet", meet.id)
+                view.context.startActivity(intent)
             }
         }
 
@@ -38,12 +47,12 @@ class MeetAdapter(val meetList:List<MeetModel>):RecyclerView.Adapter<MeetAdapter
         return MeetHolder(layoutInflater.inflate(R.layout.item_meet, parent, false))
     }
 
-    override fun onBindViewHolder(holder: MeetHolder, position: Int){
+    override fun onBindViewHolder(holder: MeetHolder, position: Int) {
         holder.render(meetList[position])
     }
 
     override fun getItemCount(): Int {
-        return  meetList.size
+        return meetList.size
     }
 }
 

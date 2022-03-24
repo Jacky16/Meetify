@@ -66,15 +66,11 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         binding.bsCreateMeetInclude.titlDate.setFocusable(false)
         binding.bsCreateMeetInclude.titlHour.setFocusable(false)
 
-
-        //Collect the date selected
         initBottomSheetCreateMeet()
 
-
+        //Create Meet Manager
         bottomSheetCreateMeetManager()
     }
-
-
 
     private fun setInfoOnBottomSheetCreateMeet() {
 
@@ -124,12 +120,17 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
 
             //Add the Meet in List and Map
             meetToAdd.let {
+                it?.id = (MeetProvider.getMeets().size..100).random()
+
+                //Add to map
                 clusterManager.addItem(MyMeetCluster(it!!))
+
+                //Add to list of meets
                 MeetProvider.addMeet(it)
+
+                //Refresh Map to view the meet
                 clusterManager.cluster()
             }
-
-
         }
         //Cancel Button
         binding.bsCreateMeetInclude.btnCancelCreateMeet.setOnClickListener {
@@ -248,7 +249,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
     }
 
 
-    fun moveToCurrentLocation() {
+    private fun moveToCurrentLocation() {
         if (ActivityCompat.checkSelfPermission(
                 this.requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -313,7 +314,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         addMarkersMeets()
     }
 
-    fun addMarkersMeets() {
+    private fun addMarkersMeets() {
         clusterManager.clearItems()
         MeetProvider.getMeets().forEach { meetToAdd ->
             clusterManager.addItem(MyMeetCluster(meetToAdd))

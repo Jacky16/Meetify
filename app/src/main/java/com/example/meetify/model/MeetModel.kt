@@ -3,7 +3,7 @@ package com.example.meetify.model
 import com.google.android.gms.maps.model.LatLng
 
 data class MeetModel(
-    val id: Int = 0,
+    var id: Int = 0,
     var name: String = "",
     val people: Int =0,
     var hour: Int = 0,
