@@ -9,8 +9,8 @@ class HomeViewModel: ViewModel() {
 
     val quoteMeetList = MutableLiveData<List<MeetModel>>()
     fun getMeets(){
-        val meets = MeetProvider.getMeets()
-        quoteMeetList.postValue(meets)
+        //val meets = meetProvider.getMeets()
+        //quoteMeetList.postValue(meets)
     }
 
 }

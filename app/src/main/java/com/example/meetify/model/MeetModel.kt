@@ -1,31 +1,20 @@
 package com.example.meetify.model
 
 import com.google.android.gms.maps.model.LatLng
+import java.util.*
 
 data class MeetModel(
-    var id: Int = 0,
-    var name: String = "",
-    val people: Int =0,
-    var hour: Int = 0,
-    var date: Int = 0,
-    var description: String = "",
-    var position: LatLng = LatLng(0.0,0.0),
-    val persons: MutableList<PersonModel> = mutableListOf(
-        PersonModel("Guillermo", "Barrasa"),
-        PersonModel("Pedro", "Fernandez"),
-        PersonModel("Dieko", "Meña"),
-        PersonModel("Guillermo", "Barrasa"),
-        PersonModel("Pedro", "Fernandez"),
-        PersonModel("Guillermo", "Barrasa"),
-        PersonModel("Pedro", "Fernandez"),
-        PersonModel("Guillermo", "Barrasa"),
-        PersonModel("Pedro", "Fernandez"),
-        PersonModel("Guillermo", "Barrasa"),
-        PersonModel("Pedro", "Fernandez"),
-    )
+    var id: String?,
+    var title: String,
+    var dateTime: Calendar,
+    var description: String,
+    var position: LatLng
+) {
 
-){
-
-
-
+    constructor(
+        title: String,
+        dateTime: Calendar,
+        description: String,
+        position: LatLng,
+    ) : this(null, title, dateTime, description, position)
 }

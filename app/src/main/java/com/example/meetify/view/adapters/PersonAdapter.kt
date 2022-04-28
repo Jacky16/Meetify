@@ -15,7 +15,7 @@ class PersonAdapter(val persons: List<PersonModel>) :
     class PersonHolder(val view: View) : RecyclerView.ViewHolder(view) {
         val binding = ItemPersonBinding.bind(view)
         fun render(person: PersonModel){
-            binding.tvName.text = person.name
+            //binding.tvName.text = person.name
         }
 
     }

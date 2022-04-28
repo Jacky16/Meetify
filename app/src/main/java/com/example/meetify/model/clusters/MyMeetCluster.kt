@@ -22,7 +22,7 @@ class MyMeetCluster(
     }
 
     override fun getTitle(): String? {
-        return myMeet.name
+        return myMeet.title
     }
 
     override fun getSnippet(): String? {

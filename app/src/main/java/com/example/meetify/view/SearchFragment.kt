@@ -1,6 +1,8 @@
 package com.example.meetify.view
 
 import android.Manifest
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,6 +18,7 @@ import com.example.meetify.R
 import com.example.meetify.databinding.SearchFragmentBinding
 import com.example.meetify.model.MeetModel
 import com.example.meetify.model.MeetProvider
+import com.example.meetify.model.PersonModel
 import com.example.meetify.model.clusters.DefaultClusterRenderer
 import com.example.meetify.model.clusters.MyMeetCluster
 import com.example.meetify.viewmodel.SearchViewModel
@@ -31,7 +34,11 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.google.maps.android.clustering.ClusterManager
+import java.sql.Timestamp
+import java.text.DateFormat
+import java.time.LocalDate
 import java.util.*
+import kotlin.time.Duration.Companion.hours
 
 class SearchFragment : Fragment(), OnMapReadyCallback,
     ClusterManager.OnClusterItemClickListener<MyMeetCluster?> {
@@ -44,8 +51,8 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var currentLocation: LatLng? = null
     private lateinit var clusterManager: ClusterManager<MyMeetCluster?>
-    var meetToAdd: MeetModel? = null
-
+    lateinit var locationToAdd:LatLng
+    private val meetProvider = MeetProvider()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
@@ -72,16 +79,6 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         bottomSheetCreateMeetManager()
     }
 
-    private fun setInfoOnBottomSheetCreateMeet() {
-
-        //Name
-        meetToAdd?.name = binding.bsCreateMeetInclude.titlNameMeet.text.toString()
-
-        //Description
-        meetToAdd?.description = binding.bsCreateMeetInclude.titlDescriptionMeet.text.toString()
-
-    }
-
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -100,37 +97,33 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         }
         googleMap.setOnMapLongClickListener {
             expandeBottomSheetCreateMeet()
-            meetToAdd = MeetModel()
-            meetToAdd?.position = it
+            locationToAdd = it
         }
-
     }
 
     //region BottomSheet Create Meet functions
     private fun bottomSheetCreateMeetManager() {
+        //Get current date with Date data
+
+        val dateTime:Calendar = Calendar.getInstance()
 
         //Button Done
         binding.bsCreateMeetInclude.btnCreateMeet.setOnClickListener {
             BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
                 this.state = BottomSheetBehavior.STATE_HIDDEN
-
             }
-            //Init the info to meetToAdd
-            setInfoOnBottomSheetCreateMeet()
 
-            //Add the Meet in List and Map
-            meetToAdd.let {
-                it?.id = (MeetProvider.getMeets().size..100).random()
+            // Get Name
+            val titleMeet = binding.bsCreateMeetInclude.titlNameMeet.text.toString()
 
-                //Add to map
-                clusterManager.addItem(MyMeetCluster(it!!))
+            //Get Description
+            val descriptionMeet = binding.bsCreateMeetInclude.titlDescriptionMeet.text.toString()
 
-                //Add to list of meets
-                MeetProvider.addMeet(it)
-
-                //Refresh Map to view the meet
-                clusterManager.cluster()
+            dateTime?.let { _dateTime ->
+                addMeetToListAndMap(MeetModel(titleMeet,_dateTime,descriptionMeet,locationToAdd))
             }
+
+
         }
         //Cancel Button
         binding.bsCreateMeetInclude.btnCancelCreateMeet.setOnClickListener {
@@ -138,41 +131,58 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
                 this.state = BottomSheetBehavior.STATE_HIDDEN
             }
         }
-        
-        //Date picker
+
+        //Do a date picker
         binding.bsCreateMeetInclude.titlDate.setOnClickListener {
-            val datePicker =
-                MaterialDatePicker.Builder.datePicker()
-                    .setTitleText("Select date")
-                    .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
-                    .build()
-            datePicker.show(this.childFragmentManager, "DATE_PICKER")
-
-            datePicker.addOnPositiveButtonClickListener {
-                val date = Date(it)
-                val dateString = "${date.date}/${date.month}/${date.year}"
-                binding.bsCreateMeetInclude.titlDate.setText(dateString)
-                meetToAdd?.date = date.day.toInt()
-            }
+            val datePicker = DatePickerDialog(
+                requireContext(),
+                DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                    dateTime.set(Calendar.YEAR, year)
+                    dateTime.set(Calendar.MONTH, month)
+                    dateTime.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                    binding.bsCreateMeetInclude.titlDate.setText(
+                        DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.time)
+                    )
+                },
+                dateTime.get(Calendar.YEAR),
+                dateTime.get(Calendar.MONTH),
+                dateTime.get(Calendar.DAY_OF_MONTH)
+            )
+            datePicker.show()
         }
 
-        //Hour picker
+
+        //Do a Hour picker
         binding.bsCreateMeetInclude.titlHour.setOnClickListener {
-            val hourPicker =
-                MaterialTimePicker.Builder()
-                    .setTimeFormat(TimeFormat.CLOCK_12H)
-                    .setHour(12)
-                    .setMinute(10)
-                    .setTitleText("Select a time")
-                    .build()
-            hourPicker.show(childFragmentManager, "HOUR_PICKER")
-            hourPicker.addOnPositiveButtonClickListener {
-                val hourString = "${hourPicker.hour}:${hourPicker.minute}"
-                Toast.makeText(context, hourString, Toast.LENGTH_SHORT).show()
-                binding.bsCreateMeetInclude.titlHour.setText(hourString)
-                meetToAdd?.hour = hourPicker.hour
-            }
+            val timePicker = TimePickerDialog(
+                requireContext(),
+                TimePickerDialog.OnTimeSetListener { _, hourOfDay, minute ->
+                    dateTime.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                    dateTime.set(Calendar.MINUTE, minute)
+                    binding.bsCreateMeetInclude.titlHour.setText(
+                        DateFormat.getTimeInstance(DateFormat.SHORT).format(dateTime.time)
+                    )
+                },
+                dateTime.get(Calendar.HOUR_OF_DAY),
+                dateTime.get(Calendar.MINUTE),
+                true
+            )
+            timePicker.show()
         }
+
+
+
+    }
+
+    private fun addMeetToListAndMap(meet: MeetModel) {
+        //Add to map
+        clusterManager.addItem(MyMeetCluster(meet))
+
+        //Add to list of meets
+        meetProvider.addMeet(meet)
+
+        //Refresh Map to view the meet
+        clusterManager.cluster()
     }
 
     private fun expandeBottomSheetCreateMeet() {
@@ -220,11 +230,12 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
 
     private fun setInfoOnBottomSheetMeet(item: MyMeetCluster?) {
         item?.getMeet()?.let {
+            val stringHour = "${it.dateTime.get(Calendar.HOUR)}:${it.dateTime.get(Calendar.HOUR)}"
             val bind = binding.bsInfoMeetInclude
-            bind.tvTitleMeet.text = it.name
+            bind.tvTitleMeet.text = it.title
             bind.tvDescMeet.text = it.description
-            bind.tvHour.text = it.hour.toString() + ":00"
-            bind.tvPeopleCount.text = it.persons.size.toString()
+            bind.tvHour.text = stringHour
+            //bind.tvPeopleCount.text = it.persons.size.toString()
 
         }
     }
@@ -316,9 +327,9 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
 
     private fun addMarkersMeets() {
         clusterManager.clearItems()
-        MeetProvider.getMeets().forEach { meetToAdd ->
-            clusterManager.addItem(MyMeetCluster(meetToAdd))
-        }
+        //meetProvider.getMeets().forEach { meetToAdd ->
+           // clusterManager.addItem(MyMeetCluster(meetToAdd))
+        //}
     }
 
     private fun setUpMap() {

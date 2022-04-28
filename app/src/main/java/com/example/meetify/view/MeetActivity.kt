@@ -1,12 +1,9 @@
 package com.example.meetify
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.MenuItem
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.meetify.R
 import com.example.meetify.databinding.ActivityMeetBinding
 import com.example.meetify.model.MeetModel
 import com.example.meetify.model.MeetProvider
@@ -49,22 +46,22 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback {
         recyclerView = binding.recyclerView
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        val adapter = PersonAdapter(meet.persons)
-        recyclerView.adapter = adapter
+        //val adapter = PersonAdapter(meet.persons)
+        //recyclerView.adapter = adapter
     }
 
     private fun getExtras() {
         val extras = intent.extras
 
         val id = extras?.getInt("idMeet")
-        meet = MeetProvider.getMeets().find {
-            it.id == id
-        }!!
+        //meet = MeetProvider.getMeets().find {
+        //    it.id == id
+        //}!!
     }
 
     private fun initInfoMeet() {
-        binding.tvTitleMeet.text = meet.name.toString()
-        binding.tvHourMeet.text = meet.hour.toString() + ":00"
+        binding.tvTitleMeet.text = meet.title.toString()
+       // binding.tvHourMeet.text = meet.hour.toString() + ":00"
         binding.tvDescMeet.text = meet.description.toString()
     }
 
@@ -75,7 +72,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback {
         googleMap.addMarker(
             MarkerOptions()
                 .position(meet.position)
-                .title(meet.name)
+                .title(meet.title)
         )
 
         googleMap.moveCamera(

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "766080478778",
+    "project_id": "meetify-5ec47",
+    "storage_bucket": "meetify-5ec47.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:766080478778:android:effe68216b413680aacf03",
+        "android_client_info": {
+          "package_name": "com.example.meetify"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "766080478778-bi9klhq0dc4d8nbgv75komdoaqs40pc2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjqstfDlr1xHRKplCUi4yS2arHYZrhaCc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "766080478778-bi9klhq0dc4d8nbgv75komdoaqs40pc2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

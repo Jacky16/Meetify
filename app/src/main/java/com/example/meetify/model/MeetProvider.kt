@@ -1,63 +1,57 @@
 package com.example.meetify.model
 
+import android.content.ContentValues.TAG
+import android.util.Log
+import android.widget.Toast
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import java.util.*
+
 
 class MeetProvider {
+    var db = FirebaseFirestore.getInstance()
+    public fun getMeets(): List<MeetModel> {
 
-    companion object {
-        public fun getMeets(): List<MeetModel> {
-            return meets
-        }
-        public fun addMeet(_meetToAdd:MeetModel){
-            meets.add(_meetToAdd)
-        }
-        private val meets = mutableListOf<MeetModel>(
-            MeetModel(
-                1,
-                "Plaza Cataluña",
-                20,
-                15,
-                2,
-                "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.",
-                LatLng(41.387027, 2.170071)
-            ),
-            MeetModel(
-                2,
-                "Arc de Triomf",
-                10,
-                14,
-                2,
-                "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.",
-                LatLng(41.390997, 2.180766)
-            ),
-            MeetModel(
-                3,
-                "La Maquinista",
-                50,
-                9,
-                2,
-                "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.",
-                LatLng(41.442391, 2.197628)
-            ),
-            MeetModel(
-                4,
-                "Bunquers del Carmel",
-                100,
-                10,
-                2,
-                "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.",
-                LatLng(41.419298, 2.161717)
-            ),
-            MeetModel(
-                5,
-                "Virrey Amat",
-                40,
-                20,
-                2,
-                "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.",
-                LatLng(41.429997, 2.174821)
-            )
+        val meetsList:MutableList<MeetModel> = mutableListOf()
+        db.collection("meets")
+            .get()
+            .addOnSuccessListener { result ->
+                result.toObjects(MeetModel::class.java).forEach() {
+                    meetsList.add(it)
+                }
+                for (document in result) {
+                    val dateTime = document.data["datetime"] as Timestamp
+                    val position = document.data["position"] as LatLng
+                    val description = document.data["description"] as String
+                    val title= document.data["title"] as String
+
+                    val meetModel = MeetModel(title, Calendar.getInstance(),description,position)
+                    Log.d(TAG,meetModel.toString())
+
+                }
+            }
+        return meetsList
+    }
+
+    public fun addMeet(_meetToAdd: MeetModel) {
+
+        val meetToAdd = hashMapOf(
+            "title" to _meetToAdd.title,
+            "datetime" to _meetToAdd.dateTime.time,
+            "description" to _meetToAdd.description,
+            "position" to _meetToAdd.position
         )
+        //Add meetToAdd in firestore database
+        db.collection("meets").add(meetToAdd)
+            .addOnSuccessListener { documentReference ->
+                Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
+            }
+            .addOnFailureListener { e ->
+                Log.w(TAG, "Error adding document", e)
+            }
 
     }
 }
+

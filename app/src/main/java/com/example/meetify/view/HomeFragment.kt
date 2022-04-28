@@ -16,6 +16,7 @@ class HomeFragment : Fragment() {
 
     private lateinit var viewModel: HomeViewModel
     private lateinit var binding: HomeFragmentBinding
+    private val meetProvider = MeetProvider()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,10 +31,11 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         var recyclerView = binding.recyclerViewMeets
-        val adapter = MeetAdapter(MeetProvider.getMeets())
+        //val adapter = MeetAdapter(meetProvider.getMeets())
+        //meetProvider.getMeets()
 
         recyclerView.layoutManager = LinearLayoutManager(this.context)
-        recyclerView.adapter = adapter
+        //recyclerView.adapter = adapter
 
     }
     override fun onActivityCreated(savedInstanceState: Bundle?) {
