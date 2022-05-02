@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.meetify.databinding.ActivityMeetBinding
+import com.example.meetify.model.CacheMeets
 import com.example.meetify.model.MeetModel
 import com.example.meetify.model.MeetProvider
 import com.example.tabs.Person.PersonAdapter
@@ -24,7 +25,6 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         binding = ActivityMeetBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         getExtras()
 
         initRecyclerView()
@@ -53,15 +53,16 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun getExtras() {
         val extras = intent.extras
 
-        val id = extras?.getInt("idMeet")
-        //meet = MeetProvider.getMeets().find {
-        //    it.id == id
-        //}!!
+        val id = extras?.getString("idMeet")
+        CacheMeets.meetList.find { it.id == id }?.let {
+            meet = it
+        }
+
     }
 
     private fun initInfoMeet() {
         binding.tvTitleMeet.text = meet.title.toString()
-       // binding.tvHourMeet.text = meet.hour.toString() + ":00"
+        // binding.tvHourMeet.text = meet.hour.toString() + ":00"
         binding.tvDescMeet.text = meet.description.toString()
     }
 
@@ -71,21 +72,22 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback {
 
         googleMap.addMarker(
             MarkerOptions()
-                .position(meet.position)
+                .position(
+                    meet.position!!
+                )
                 .title(meet.title)
         )
 
         googleMap.moveCamera(
             CameraUpdateFactory.newLatLngZoom(
-                LatLng(
-                    meet.position.latitude,
-                    meet.position.longitude
-                ), 18f
+                meet.position!!, 18f
             )
         )
         binding.btnLocation.setOnClickListener {
             googleMap.animateCamera(
-                CameraUpdateFactory.newLatLngZoom(meet.position, 18f),
+                CameraUpdateFactory.newLatLngZoom(
+                    meet.position!!, 18f
+                ),
                 1000,
                 null
             )

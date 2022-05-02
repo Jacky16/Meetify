@@ -18,7 +18,7 @@ class MyMeetCluster(
     }
 
     override fun getPosition(): LatLng {
-        return myMeet.position
+        return myMeet.position!!
     }
 
     override fun getTitle(): String? {

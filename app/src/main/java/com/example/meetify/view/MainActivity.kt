@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import com.example.meetify.R
 import com.example.meetify.databinding.ActivityMainBinding
+import com.example.meetify.model.MeetProvider
 import com.google.firebase.firestore.FirebaseFirestore
 
 
@@ -15,6 +16,9 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater);
         setContentView(binding.root)
         val db = FirebaseFirestore.getInstance()
+
+        //Setear meets en la cache
+        MeetProvider.getMeets()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.home -> {

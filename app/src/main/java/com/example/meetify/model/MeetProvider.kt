@@ -7,45 +7,57 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 import java.util.*
 
 
-class MeetProvider {
+object MeetProvider {
+
     var db = FirebaseFirestore.getInstance()
-    public fun getMeets(): List<MeetModel> {
 
-        val meetsList:MutableList<MeetModel> = mutableListOf()
-        db.collection("meets")
-            .get()
+    public fun getMeets():List<MeetModel> {
+        //Get all meets from firebase and save it to the local database
+        var meets = ArrayList<MeetModel>()
+        db.collection("meets").get()
             .addOnSuccessListener { result ->
-                result.toObjects(MeetModel::class.java).forEach() {
-                    meetsList.add(it)
-                }
                 for (document in result) {
-                    val dateTime = document.data["datetime"] as Timestamp
-                    val position = document.data["position"] as LatLng
-                    val description = document.data["description"] as String
-                    val title= document.data["title"] as String
 
-                    val meetModel = MeetModel(title, Calendar.getInstance(),description,position)
-                    Log.d(TAG,meetModel.toString())
+                    val dateTime = document.get("dateTime") as Timestamp
+                    val geoPoint = document.getGeoPoint("position")
+                    val position = LatLng(geoPoint?.latitude ?: 0.0, geoPoint?.longitude ?: 0.0)
 
+                    //Init MeetModel with data from firebase
+                    val meet = MeetModel(
+                        document.get("title").toString(),
+                        dateTime.toDate(),
+                        document.get("description").toString(),
+                        position
+                    )
+                    meets.add(meet)
+                    CacheMeets.meetList.add(meet)
                 }
             }
-        return meetsList
+            .addOnFailureListener { exception ->
+                Log.w(TAG, "Error getting meets", exception)
+            }
+
+        return meets
     }
 
     public fun addMeet(_meetToAdd: MeetModel) {
-
+        val geoPoint = GeoPoint(_meetToAdd.position!!.latitude, _meetToAdd.position!!.longitude)
         val meetToAdd = hashMapOf(
             "title" to _meetToAdd.title,
-            "datetime" to _meetToAdd.dateTime.time,
+            "dateTime" to _meetToAdd.dateTime,
             "description" to _meetToAdd.description,
-            "position" to _meetToAdd.position
+            "position" to geoPoint
         )
         //Add meetToAdd in firestore database
         db.collection("meets").add(meetToAdd)
             .addOnSuccessListener { documentReference ->
+                _meetToAdd.id = documentReference.id
+                CacheMeets.meetList.add(_meetToAdd)
+
                 Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
             }
             .addOnFailureListener { e ->
@@ -54,4 +66,3 @@ class MeetProvider {
 
     }
 }
-

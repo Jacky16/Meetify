@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.meetify.databinding.HomeFragmentBinding
+import com.example.meetify.model.CacheMeets
 import com.example.meetify.model.MeetProvider
 import com.example.meetify.view.adapters.MeetAdapter
 import com.example.meetify.viewmodel.HomeViewModel
@@ -16,7 +17,6 @@ class HomeFragment : Fragment() {
 
     private lateinit var viewModel: HomeViewModel
     private lateinit var binding: HomeFragmentBinding
-    private val meetProvider = MeetProvider()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,17 +31,13 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         var recyclerView = binding.recyclerViewMeets
-        //val adapter = MeetAdapter(meetProvider.getMeets())
-        //meetProvider.getMeets()
+        val adapter = MeetAdapter(CacheMeets.meetList)
 
         recyclerView.layoutManager = LinearLayoutManager(this.context)
-        //recyclerView.adapter = adapter
+        recyclerView.adapter = adapter
 
-    }
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
-        // TODO: Use the ViewModel
+
 
     }
 
