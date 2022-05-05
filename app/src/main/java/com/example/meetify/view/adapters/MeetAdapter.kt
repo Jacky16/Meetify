@@ -11,7 +11,7 @@ import com.example.meetify.databinding.ItemMeetBinding
 import com.example.meetify.model.MeetModel
 
 
-class MeetAdapter(val meetList: List<MeetModel>) : RecyclerView.Adapter<MeetAdapter.MeetHolder>() {
+class MeetAdapter(var meetList: List<MeetModel>) : RecyclerView.Adapter<MeetAdapter.MeetHolder>() {
 
     inner class MeetHolder(val view: View) : RecyclerView.ViewHolder(view) {
         val binding = ItemMeetBinding.bind(view)
@@ -44,6 +44,11 @@ class MeetAdapter(val meetList: List<MeetModel>) : RecyclerView.Adapter<MeetAdap
 
     override fun getItemCount(): Int {
         return meetList.size
+    }
+
+    fun updateMeets(it: ArrayList<MeetModel>) {
+        meetList = it
+        notifyDataSetChanged()
     }
 }
 
