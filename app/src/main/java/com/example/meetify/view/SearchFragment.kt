@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.example.meetify.R
 import com.example.meetify.databinding.SearchFragmentBinding
@@ -22,6 +23,8 @@ import com.example.meetify.model.MeetProvider
 import com.example.meetify.model.PersonModel
 import com.example.meetify.model.clusters.DefaultClusterRenderer
 import com.example.meetify.model.clusters.MyMeetCluster
+import com.example.meetify.viewmodel.MeetViewModel
+import com.example.meetify.viewmodel.MeetsViewModel
 import com.example.meetify.viewmodel.SearchViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -31,28 +34,21 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.timepicker.MaterialTimePicker
-import com.google.android.material.timepicker.TimeFormat
 import com.google.maps.android.clustering.ClusterManager
-import java.sql.Timestamp
-import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.util.*
-import kotlin.time.Duration.Companion.hours
 
 class SearchFragment : Fragment(), OnMapReadyCallback,
     ClusterManager.OnClusterItemClickListener<MyMeetCluster?> {
 
     private lateinit var viewModel: SearchViewModel
     lateinit var binding: SearchFragmentBinding
-
+    val meetsViewModel: MeetsViewModel by viewModels()
     //Google maps variables
-    private lateinit var googleMap: GoogleMap
+    var googleMap: GoogleMap? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var currentLocation: LatLng? = null
-    private lateinit var clusterManager: ClusterManager<MyMeetCluster?>
+    private var clusterManager: ClusterManager<MyMeetCluster?>? = null
     lateinit var locationToAdd:LatLng
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -75,17 +71,14 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         binding.bsCreateMeetInclude.titlHour.setFocusable(false)
 
         initBottomSheetCreateMeet()
-
         //Create Meet Manager
         bottomSheetCreateMeetManager()
+        meetsViewModel.getMeets()
+        meetsViewModel.meets.observe(viewLifecycleOwner){
+            addMarkersMeets()
+        }
     }
 
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(SearchViewModel::class.java)
-        // TODO: Use the ViewModel
-    }
 
     override fun onMapReady(_map: GoogleMap) {
         googleMap = _map
@@ -93,10 +86,10 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         enableLocation()
         setUpClusterer()
 
-        googleMap.setOnMapClickListener {
+        googleMap?.setOnMapClickListener {
             collapseBottomSheetInfoMeet()
         }
-        googleMap.setOnMapLongClickListener {
+        googleMap?.setOnMapLongClickListener {
             expandeBottomSheetCreateMeet()
             locationToAdd = it
         }
@@ -172,13 +165,13 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
 
     private fun addMeetToListAndMap(meet: MeetModel) {
         //Add to map
-        clusterManager.addItem(MyMeetCluster(meet))
+        clusterManager?.addItem(MyMeetCluster(meet))
 
         //Add to list of meets
         MeetProvider.addMeet(meet)
 
         //Refresh Map to view the meet
-        clusterManager.cluster()
+        clusterManager?.cluster()
     }
 
     private fun expandeBottomSheetCreateMeet() {
@@ -272,7 +265,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         }
         fusedLocationClient.lastLocation.addOnSuccessListener(this.requireActivity()) { location ->
             currentLocation?.let {
-                googleMap.animateCamera(
+                googleMap?.animateCamera(
                     CameraUpdateFactory.newLatLngZoom(it, 18f),
                     1000,
                     null
@@ -297,7 +290,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
 
     private fun setUpClusterer() {
         // Position the map.
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(51.503186, -0.126446), 10f))
+        googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(51.503186, -0.126446), 10f))
 
         // Initialize the manager with the context and the map.
         // (Activity extends context, so we can pass 'this' in the constructor.)
@@ -305,32 +298,32 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
 
         //Modificanco el renderer de los clusters por uno custom
         val clusterRenderer = DefaultClusterRenderer(context, googleMap, clusterManager)
-        clusterManager.setRenderer(clusterRenderer)
+        clusterManager?.setRenderer(clusterRenderer)
 
         // Point the map's listeners at the listeners implemented by the cluster
-        googleMap.setOnCameraIdleListener(clusterManager)
+        googleMap?.setOnCameraIdleListener(clusterManager)
 
-        clusterManager.setOnClusterItemClickListener(this)
+        clusterManager?.setOnClusterItemClickListener(this)
 
         // Add cluster items (markers) to the cluster manager.
         addMarkersMeets()
     }
 
     private fun addMarkersMeets() {
-        clusterManager.clearItems()
-        CacheMeets.meetList.forEach {
+        clusterManager?.clearItems()
+        meetsViewModel.meets.value?.forEach {
             val meet = it
             val marker = MyMeetCluster(meet)
-            clusterManager.addItem(marker)
+            clusterManager?.addItem(marker)
         }
     }
 
     private fun setUpMap() {
-        googleMap.uiSettings.isMyLocationButtonEnabled = false
-        googleMap.uiSettings.isRotateGesturesEnabled = false
-        googleMap.uiSettings.isTiltGesturesEnabled = false
-        googleMap.isBuildingsEnabled = false
-        googleMap.isIndoorEnabled = false
+        googleMap?.uiSettings?.isMyLocationButtonEnabled = false
+        googleMap?.uiSettings?.isRotateGesturesEnabled = false
+        googleMap?.uiSettings?.isTiltGesturesEnabled = false
+        googleMap?.isBuildingsEnabled = false
+        googleMap?.isIndoorEnabled = false
     }
 
     private fun createMapFragment() {
@@ -357,12 +350,12 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
             return
         }
         //Init current location and move to camera to her
-        googleMap.isMyLocationEnabled = true
+        googleMap?.isMyLocationEnabled = true
         fusedLocationClient.lastLocation.addOnSuccessListener(this.requireActivity()) { location ->
             if (location != null) {
                 currentLocation = LatLng(location.latitude, location.longitude)
                 currentLocation?.let {
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(it, 18f))
+                    googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(it, 18f))
                 }
             }
         }
