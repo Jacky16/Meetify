@@ -10,12 +10,10 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.meetify.databinding.HomeFragmentBinding
 import com.example.meetify.view.adapters.MeetAdapter
-import com.example.meetify.viewmodel.HomeViewModel
 import com.example.meetify.viewmodel.MeetsViewModel
 
 class HomeFragment : Fragment() {
 
-    private lateinit var viewModel: HomeViewModel
     private lateinit var binding: HomeFragmentBinding
     val meetsModelView: MeetsViewModel by viewModels()
 
@@ -38,11 +36,8 @@ class HomeFragment : Fragment() {
             adapter.updateMeets(it)
         }
 
-
         recyclerView.layoutManager = LinearLayoutManager(this.context)
         recyclerView.adapter = adapter
-
-        viewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
 
 
     }
