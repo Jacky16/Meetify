@@ -9,6 +9,7 @@ import com.example.meetify.MeetActivity
 import com.example.meetify.R
 import com.example.meetify.databinding.ItemMeetBinding
 import com.example.meetify.model.MeetModel
+import io.opencensus.internal.Utils
 
 
 class MeetAdapter(var meetList: List<MeetModel>) : RecyclerView.Adapter<MeetAdapter.MeetHolder>() {
@@ -19,6 +20,7 @@ class MeetAdapter(var meetList: List<MeetModel>) : RecyclerView.Adapter<MeetAdap
         fun render(meet: MeetModel) {
             binding.tvtitle.text = meet.title
             //binding.tvPeopleCount.text = meet.people.toString()
+
             //binding.tvHour.text = meet.hour.toString() + ":00"
 
             binding.btnJoinMeet.setOnClickListener {

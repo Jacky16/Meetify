@@ -4,7 +4,6 @@ import android.content.ContentValues
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.meetify.model.CacheMeets
 import com.example.meetify.model.MeetModel
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp

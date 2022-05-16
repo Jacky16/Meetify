@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
@@ -17,7 +16,6 @@ import androidx.fragment.app.viewModels
 import com.example.meetify.R
 import com.example.meetify.databinding.SearchFragmentBinding
 import com.example.meetify.model.MeetModel
-import com.example.meetify.model.MeetProvider
 import com.example.meetify.model.clusters.DefaultClusterRenderer
 import com.example.meetify.model.clusters.MyMeetCluster
 import com.example.meetify.viewmodel.MeetsViewModel
@@ -160,9 +158,6 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
     private fun addMeetToListAndMap(meet: MeetModel) {
         //Add to map
         clusterManager?.addItem(MyMeetCluster(meet))
-
-        //Add to list of meets
-        MeetProvider.addMeet(meet)
 
         //Refresh Map to view the meet
         clusterManager?.cluster()
