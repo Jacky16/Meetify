@@ -1,6 +1,7 @@
 package com.example.meetify.view.adapters
 
 import android.content.Intent
+import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +11,7 @@ import com.example.meetify.R
 import com.example.meetify.databinding.ItemMeetBinding
 import com.example.meetify.model.MeetModel
 import io.opencensus.internal.Utils
+import kotlin.time.Duration.Companion.hours
 
 
 class MeetAdapter(var meetList: List<MeetModel>) : RecyclerView.Adapter<MeetAdapter.MeetHolder>() {
@@ -19,13 +21,17 @@ class MeetAdapter(var meetList: List<MeetModel>) : RecyclerView.Adapter<MeetAdap
 
         fun render(meet: MeetModel) {
             binding.tvtitle.text = meet.title
-            //binding.tvPeopleCount.text = meet.people.toString()
+            binding.tvPeopleCount.text = 100.toString()
 
-            //binding.tvHour.text = meet.hour.toString() + ":00"
+            //Set datetime to tvHour
+            val dateTimeString = DateUtils.formatDateTime(view.context, meet.dateTime?.time ?:0L, DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_DATE)
+            binding.tvHour.text = dateTimeString
 
+            //Join Button
             binding.btnJoinMeet.setOnClickListener {
 
             }
+            //View Click
             view.setOnClickListener {
                 val intent = Intent(view.context, MeetActivity::class.java);
                 intent.putExtra("idMeet", meet.id)
