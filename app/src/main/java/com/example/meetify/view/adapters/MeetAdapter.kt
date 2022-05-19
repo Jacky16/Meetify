@@ -10,8 +10,6 @@ import com.example.meetify.MeetActivity
 import com.example.meetify.R
 import com.example.meetify.databinding.ItemMeetBinding
 import com.example.meetify.model.MeetModel
-import io.opencensus.internal.Utils
-import kotlin.time.Duration.Companion.hours
 
 
 class MeetAdapter(var meetList: List<MeetModel>) : RecyclerView.Adapter<MeetAdapter.MeetHolder>() {
