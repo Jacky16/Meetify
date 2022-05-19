@@ -6,15 +6,15 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.meetify.R
 import com.example.meetify.databinding.ItemPersonBinding
-import com.example.meetify.model.PersonModel
+import com.example.meetify.model.UserModel
 import com.example.tabs.Person.PersonAdapter.*
 
-class PersonAdapter(val persons: List<PersonModel>) :
+class PersonAdapter(val users: List<UserModel>) :
     RecyclerView.Adapter<PersonHolder>() {
 
     class PersonHolder(val view: View) : RecyclerView.ViewHolder(view) {
         val binding = ItemPersonBinding.bind(view)
-        fun render(person: PersonModel){
+        fun render(user: UserModel){
             //binding.tvName.text = person.name
         }
 
@@ -26,10 +26,10 @@ class PersonAdapter(val persons: List<PersonModel>) :
     }
 
     override fun onBindViewHolder(holder: PersonHolder, position: Int) {
-        holder.render(persons[position])
+        holder.render(users[position])
     }
 
     override fun getItemCount(): Int {
-        return persons.size
+        return users.size
     }
 }
