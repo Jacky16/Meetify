@@ -7,8 +7,10 @@ import androidx.lifecycle.ViewModel
 import com.example.meetify.model.MeetModel
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.firestore.SetOptions
 import java.util.ArrayList
 
 class MeetsViewModel : ViewModel() {
@@ -50,7 +52,8 @@ class MeetsViewModel : ViewModel() {
             "title" to _meetToAdd.title,
             "dateTime" to _meetToAdd.dateTime,
             "description" to _meetToAdd.description,
-            "position" to geoPoint
+            "position" to geoPoint,
+            "OwnerUserID" to FirebaseAuth.getInstance().currentUser?.uid
         )
         //Add meetToAdd in firestore database
         db.collection("meets").add(meetToAdd)

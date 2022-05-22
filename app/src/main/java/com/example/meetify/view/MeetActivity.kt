@@ -40,8 +40,17 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback {
         binding.btnBack.setOnClickListener {
             finish()
         }
+        joinMeet()
 
 
+
+    }
+    private fun joinMeet(){
+        binding.btnJoinIn.setOnClickListener {
+            currentMeet?.let {
+                meetModelView.joinMeet(it)
+            }
+        }
     }
 
     private fun initRecyclerView() {

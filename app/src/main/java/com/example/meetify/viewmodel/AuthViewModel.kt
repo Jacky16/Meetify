@@ -1,8 +1,12 @@
 package com.example.meetify.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.meetify.model.UserModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.userProfileChangeRequest
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
 
 class AuthViewModel : ViewModel() {
 
@@ -30,18 +34,43 @@ class AuthViewModel : ViewModel() {
         FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener {
                 val currUser = FirebaseAuth.getInstance().currentUser
-                currUser?.let {
-                    UserModel.setUserId(currUser.uid)
-                    it.displayName?.let { nickName -> UserModel.setNickname(nickName) }
+                //Change name of currentUser of firebase
+                val profileUpdates = userProfileChangeRequest {
+                    displayName = nickName
+                }
+
+                currUser?.let { user ->
+                    currUser.updateProfile(profileUpdates).addOnSuccessListener {
+                        UserModel.setUserId(currUser.uid)
+                        user.displayName?.let { nickName -> UserModel.setNickname(nickName) }
+                        saveUserDataOnFirestore()
+                    }
                 }
                 onSignUp()
             }.addOnFailureListener {
+                //Debug it
+                Log.e("AuthViewModel", "Error: ${it.message}")
 
             }
     }
 
-    fun isSginIn(): Boolean {
+    fun isSinIn(): Boolean {
         return FirebaseAuth.getInstance().currentUser != null
     }
+    private fun saveUserDataOnFirestore() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        currentUser?.let {
+            val userData = hashMapOf(
+                "nickname" to it.displayName,
+                "userId" to it.uid,
+                "email" to it.email,
+                "photoUrl" to it.photoUrl.toString()
+            )
+            FirebaseFirestore.getInstance().collection("users").add(userData)
+        }
+
+    }
+
+
 
 }

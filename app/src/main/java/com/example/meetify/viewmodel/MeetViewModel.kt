@@ -7,13 +7,14 @@ import androidx.lifecycle.ViewModel
 import com.example.meetify.model.MeetModel
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 
 class MeetViewModel : ViewModel() {
     var meet: MutableLiveData<MeetModel> = MutableLiveData()
     var db = FirebaseFirestore.getInstance()
-
-    public fun getMeetById(id: String){
+    public fun getMeetById(id: String) {
         //Get meet from firestore by id
         var meetPlace: MeetModel? = null
 
@@ -40,6 +41,29 @@ class MeetViewModel : ViewModel() {
             .addOnFailureListener { exception ->
                 Log.w(ContentValues.TAG, "Error getting meet", exception)
             }
+
+    }
+
+    public fun joinMeet(_meet: MeetModel) {
+        val userID = FirebaseAuth.getInstance().currentUser?.uid
+        val documentReference = db.collection("meets").document(_meet.id!!)
+
+        userID?.let {
+            val usersList = arrayListOf<String>()
+            usersList.add(userID)
+            val hashMap = hashMapOf(
+                "users" to usersList
+            )
+
+            documentReference.set(hashMap, SetOptions.merge())
+                .addOnSuccessListener {
+                    Log.d(ContentValues.TAG, "DocumentSnapshot successfully written!")
+                }
+                .addOnFailureListener { e ->
+                    Log.w(ContentValues.TAG, "Error writing document", e)
+                }
+        }
+
 
     }
 }

@@ -43,7 +43,8 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editTextEmail"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:lines="1" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -56,13 +57,14 @@
             app:endIconMode="password_toggle"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/textInputLayout5"
-            tools:layout_editor_absoluteY="77dp"
+            app:layout_constraintTop_toBottomOf="@+id/textInputLayout5"
             tools:ignore="MissingConstraints">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editTextPassword"
                 android:layout_width="match_parent"
-                android:layout_height="61dp" />
+                android:layout_height="61dp"
+                android:lines="1" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -78,7 +80,7 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <Button
-        android:id="@+id/btnRegister"
+        android:id="@+id/btnLogin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Login"

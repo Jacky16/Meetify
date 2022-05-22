@@ -35,7 +35,9 @@ class MeetAdapter(var meetList: List<MeetModel>) : RecyclerView.Adapter<MeetAdap
                 intent.putExtra("idMeet", meet.id)
                 view.context.startActivity(intent)
             }
+
         }
+
 
     }
 

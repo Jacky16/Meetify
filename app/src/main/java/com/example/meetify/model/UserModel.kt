@@ -25,7 +25,7 @@ object UserModel
     }
 
     fun getUserNickName(): String {
-        return nickName ?: "Nickname Not found"
+        return FirebaseAuth.getInstance().currentUser?.displayName ?: "nickname not found"
     }
 
     fun getUserListOfMeets(): ArrayList<MeetModel> {
