@@ -8,6 +8,7 @@ import com.example.meetify.model.MeetModel
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuth.getInstance
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.SetOptions
@@ -61,6 +62,7 @@ class MeetsViewModel : ViewModel() {
                 _meetToAdd.id = documentReference.id
                 meets.value?.add(_meetToAdd)
                 meets.notifyObserver()
+                assingOwnerMeet(_meetToAdd)
                 Log.d(ContentValues.TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
             }
             .addOnFailureListener { e ->
@@ -68,7 +70,18 @@ class MeetsViewModel : ViewModel() {
             }
     }
 
+    private fun assingOwnerMeet(meet:MeetModel){
+        val listOwnerMeets = ArrayList<String>()
+        listOwnerMeets.add(meet.id!!)
+        val ownerMeets = hashMapOf(
+            "OwnerMeets" to listOwnerMeets
+        )
+        db.collection("users").document(FirebaseAuth.getInstance().currentUser?.uid!!).set(ownerMeets)
 
+        //Asignar tambien que se ha unido a la meet
+        val mvm = MeetViewModel()
+        mvm.assingJoinedMeet(meet)
+    }
 
     fun MutableLiveData<*>.notifyObserver() {
         this.value = this.value

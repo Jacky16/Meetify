@@ -10,6 +10,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import java.util.ArrayList
 
 class MeetViewModel : ViewModel() {
     var meet: MutableLiveData<MeetModel> = MutableLiveData()
@@ -56,14 +57,23 @@ class MeetViewModel : ViewModel() {
             )
 
             documentReference.set(hashMap, SetOptions.merge())
+                //Asignar el user la Meet donde acaba de unirse
                 .addOnSuccessListener {
-                    Log.d(ContentValues.TAG, "DocumentSnapshot successfully written!")
+                    assingJoinedMeet(_meet)
                 }
-                .addOnFailureListener { e ->
-                    Log.w(ContentValues.TAG, "Error writing document", e)
-                }
+
         }
-
-
     }
+
+    public fun assingJoinedMeet(_meet: MeetModel) {
+        val listJoinedMeets = ArrayList<String>()
+        listJoinedMeets.add(_meet.id!!)
+        val ownerMeets = hashMapOf(
+            "OwnerMeets" to listJoinedMeets
+        )
+        db.collection("users").document(FirebaseAuth.getInstance().currentUser?.uid!!)
+            .set(ownerMeets)
+    }
+
+
 }

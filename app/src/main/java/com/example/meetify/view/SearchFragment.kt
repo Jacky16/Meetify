@@ -108,7 +108,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
                 addMeetToListAndMap(MeetModel(titleMeet,_dateTime,descriptionMeet,locationToAdd))
             }
 
-
+            meetsViewModel.addMeet(MeetModel(titleMeet,dateTime,descriptionMeet,locationToAdd))
         }
         //Cancel Button
         binding.bsCreateMeetInclude.btnCancelCreateMeet.setOnClickListener {

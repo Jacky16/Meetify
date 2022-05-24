@@ -66,7 +66,7 @@ class AuthViewModel : ViewModel() {
                 "email" to it.email,
                 "photoUrl" to it.photoUrl.toString()
             )
-            FirebaseFirestore.getInstance().collection("users").add(userData)
+            FirebaseFirestore.getInstance().collection("users").document(it.uid).set(userData)
         }
 
     }
