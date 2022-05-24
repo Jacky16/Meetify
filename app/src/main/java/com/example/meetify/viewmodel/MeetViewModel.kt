@@ -68,7 +68,7 @@ class MeetViewModel : ViewModel() {
         val listJoinedMeets = ArrayList<String>()
         listJoinedMeets.add(_meet.id!!)
         val ownerMeets = hashMapOf(
-            "OwnerMeets" to listJoinedMeets
+            "ownerMeets" to listJoinedMeets
         )
         db.collection("users").document(FirebaseAuth.getInstance().currentUser?.uid!!)
             .set(ownerMeets)

@@ -2,6 +2,7 @@ package com.example.meetify.view
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Patterns
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.meetify.databinding.ActivityLoginBinding
@@ -30,13 +31,35 @@ class LoginActivity : AppCompatActivity() {
 
     }
     private fun logIn(){
+
         binding.btnLogin.setOnClickListener {
-            val email = binding.editTextEmail.text.toString()
-            val password = binding.editTextPassword.text.toString()
-            viewModel.logIn(email, password){
-                loadMainActivity()
+            if(inputsCheckers()){
+                val email = binding.editTextEmail.text.toString()
+                val password = binding.editTextPassword.text.toString()
+                viewModel.logIn(email, password){
+                    loadMainActivity()
+                }
             }
         }
+    }
+
+    private fun inputsCheckers(): Boolean {
+        //Check password
+        val isPasswordValid = binding.editTextPassword.text?.length!! >= 6
+        if (isPasswordValid) {
+            binding.editTextPassword.error = null
+        } else {
+            binding.editTextPassword.error = "Password must be at least 6 characters"
+            return false
+        }
+        //Check email
+        if (isEmailValid(binding.editTextEmail.text.toString())) {
+            binding.editTextEmail.error = null
+        } else {
+            binding.editTextEmail.error = "Invalid email"
+            return false
+        }
+        return true
     }
 
     private fun createAccount(){
@@ -49,5 +72,8 @@ class LoginActivity : AppCompatActivity() {
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
         finish()
+    }
+    private fun isEmailValid(email: CharSequence?): Boolean {
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 }

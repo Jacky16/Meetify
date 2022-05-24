@@ -44,8 +44,10 @@ class MeetsViewModel : ViewModel() {
                         peopleInMeet
                     )
                     meetsList.add(meet)
+
                 }
                 meets.value = meetsList
+                meets.notifyObserver()
             }
             .addOnFailureListener { exception ->
                 Log.w(ContentValues.TAG, "Error getting meets", exception)
@@ -74,12 +76,24 @@ class MeetsViewModel : ViewModel() {
                 Log.w(ContentValues.TAG, "Error adding document", e)
             }
     }
+    public fun deleteMeet(_meetToDelete: MeetModel) {
+        db.collection("meets").document(_meetToDelete.id!!).delete()
+            .addOnSuccessListener {
+                meets.value?.remove(_meetToDelete)
+                meets.notifyObserver()
 
+                deleteAssignedMeet(_meetToDelete)
+                Log.d(ContentValues.TAG, "DocumentSnapshot successfully deleted!")
+            }
+            .addOnFailureListener { e ->
+                Log.w(ContentValues.TAG, "Error deleting document", e)
+            }
+    }
     private fun assingOwnerMeet(meet:MeetModel){
         val listOwnerMeets = ArrayList<String>()
         listOwnerMeets.add(meet.id!!)
         val ownerMeets = hashMapOf(
-            "OwnerMeets" to listOwnerMeets
+            "ownerMeets" to listOwnerMeets
         )
         db.collection("users").document(FirebaseAuth.getInstance().currentUser?.uid!!).set(ownerMeets)
 
@@ -88,22 +102,11 @@ class MeetsViewModel : ViewModel() {
         mvm.assingJoinedMeet(meet)
     }
 
-    public fun deleteMeet(_meetToDelete: MeetModel) {
-        db.collection("meets").document(_meetToDelete.id!!).delete()
-            .addOnSuccessListener {
-                meets.value?.remove(_meetToDelete)
-                meets.notifyObserver()
-                deleteAssignedMeet(_meetToDelete)
-                Log.d(ContentValues.TAG, "DocumentSnapshot successfully deleted!")
-            }
-            .addOnFailureListener { e ->
-                Log.w(ContentValues.TAG, "Error deleting document", e)
-            }
-    }
+
 
     private fun deleteAssignedMeet(meet:MeetModel){
         val userId = FirebaseAuth.getInstance().currentUser?.uid
-        db.collection("users").document(userId!!).update("OwnerMeets", FieldValue.arrayRemove(meet.id!!))
+        db.collection("users").document(userId!!).update("ownerMeets", FieldValue.arrayRemove(meet.id!!))
     }
 
     fun MutableLiveData<*>.notifyObserver() {

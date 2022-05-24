@@ -28,6 +28,7 @@ class AuthViewModel : ViewModel() {
 
                 }
             }.addOnFailureListener {
+
             }
     }
 
@@ -47,6 +48,7 @@ class AuthViewModel : ViewModel() {
                         saveUserDataOnFirestore()
                     }
                 }
+                FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
                 onSignUp()
             }.addOnFailureListener {
                 //Debug it

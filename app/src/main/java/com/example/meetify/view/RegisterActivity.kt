@@ -23,7 +23,7 @@ class RegisterActivity : AppCompatActivity() {
         binding.btnRegister.setOnClickListener {
 
             //Check password
-            val isPasswordValid = binding.editTextPassword.text?.length!! > 6
+            val isPasswordValid = binding.editTextPassword.text?.length!! >= 6
             if (isPasswordValid) {
                 binding.editTextPassword.error = null
             } else {
@@ -48,7 +48,8 @@ class RegisterActivity : AppCompatActivity() {
                         binding.editTextEmail.text.toString(),
                         binding.editTextPassword.text.toString()
                     ) {
-                        startActivity(Intent(this, LoginActivity::class.java))
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
                         finish()
                     }
             }

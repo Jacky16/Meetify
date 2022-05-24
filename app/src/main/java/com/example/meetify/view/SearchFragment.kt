@@ -5,10 +5,12 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
@@ -18,6 +20,7 @@ import com.example.meetify.databinding.SearchFragmentBinding
 import com.example.meetify.model.MeetModel
 import com.example.meetify.model.clusters.DefaultClusterRenderer
 import com.example.meetify.model.clusters.MyMeetCluster
+import com.example.meetify.viewmodel.MeetViewModel
 import com.example.meetify.viewmodel.MeetsViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -43,6 +46,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
     private var currentLocation: LatLng? = null
     private var clusterManager: ClusterManager<MyMeetCluster?>? = null
     lateinit var locationToAdd:LatLng
+    val meetViewModel: MeetViewModel by viewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
@@ -205,16 +209,46 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
 
         }
     }
+    private fun deleteMeet(meet: MeetModel) {
+        if(meetViewModel.checkOwnerMeet(meet)){
+            binding.bsInfoMeetInclude.btnDelete.visibility = View.VISIBLE
+        }
+        binding.bsInfoMeetInclude.btnDelete.setOnClickListener {
+            meetsViewModel.deleteMeet(meet)
+            clusterManager?.removeItem(MyMeetCluster(meet))
+            clusterManager?.cluster()
+            collapseBottomSheetInfoMeet()
+            Toast.makeText(requireContext(),"Meet Deleted",Toast.LENGTH_SHORT).show()
 
+
+        }
+
+    }
+    private fun joinMeet(meet:MeetModel){
+        binding.bsInfoMeetInclude.btnJoinIn.setOnClickListener {
+            meetViewModel.joinMeet(meet)
+            Toast.makeText(requireContext(),"You joined the meet",Toast.LENGTH_SHORT).show()
+        }
+    }
     private fun setInfoOnBottomSheetMeet(item: MyMeetCluster?) {
         item?.getMeet()?.let {
-            val stringHour = "${it.dateTime?.hours.toString()}:${it.dateTime?.minutes.toString()}"
+            val dateTimeString = DateUtils.formatDateTime(
+                requireContext(),
+                it?.dateTime?.time ?: 0L,
+                DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_YEAR
+            )
+            val peopleInMeet = it.peopleJoined?.size ?: 0;
+            val stringHour = dateTimeString
+
             val bind = binding.bsInfoMeetInclude
+
             bind.tvTitleMeet.text = it.title
             bind.tvDescMeet.text = it.description
             bind.tvHour.text = stringHour
-            //bind.tvPeopleCount.text = it.persons.size.toString()
+            bind.tvPeopleCount.text = peopleInMeet.toString()
 
+            deleteMeet(it)
+            joinMeet(it)
         }
     }
 
@@ -300,12 +334,16 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
     }
 
     private fun addMarkersMeets() {
-        clusterManager?.clearItems()
-        meetsViewModel.meets.value?.forEach {
-            val meet = it
-            val marker = MyMeetCluster(meet)
-            clusterManager?.addItem(marker)
+        meetsViewModel.meets.observe(viewLifecycleOwner){ listMeets ->
+            clusterManager?.clearItems()
+            listMeets.forEach {
+                val meet = it
+                val marker = MyMeetCluster(meet)
+                clusterManager?.addItem(marker)
+            }
+            clusterManager?.cluster()
         }
+
     }
 
     private fun setUpMap() {
