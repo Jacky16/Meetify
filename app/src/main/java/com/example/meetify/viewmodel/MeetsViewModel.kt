@@ -9,10 +9,11 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuth.getInstance
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.SetOptions
-import java.util.ArrayList
+import kotlin.collections.ArrayList
 
 class MeetsViewModel : ViewModel() {
     val meets = MutableLiveData<ArrayList<MeetModel>>()
@@ -29,6 +30,8 @@ class MeetsViewModel : ViewModel() {
                     val dateTime = document.get("dateTime") as Timestamp
                     val geoPoint = document.getGeoPoint("position")
                     val position = LatLng(geoPoint?.latitude ?: 0.0, geoPoint?.longitude ?: 0.0)
+                    val peopleInMeet = document.get("peopleInMeet") as ArrayList<String>?
+                    val idOwner = document.get("idOwner") as String
 
                     //Init MeetModel with data from firebase
                     val meet = MeetModel(
@@ -36,7 +39,9 @@ class MeetsViewModel : ViewModel() {
                         document.get("title").toString(),
                         dateTime.toDate(),
                         document.get("description").toString(),
-                        position
+                        position,
+                        idOwner,
+                        peopleInMeet
                     )
                     meetsList.add(meet)
                 }
@@ -54,7 +59,7 @@ class MeetsViewModel : ViewModel() {
             "dateTime" to _meetToAdd.dateTime,
             "description" to _meetToAdd.description,
             "position" to geoPoint,
-            "OwnerUserID" to FirebaseAuth.getInstance().currentUser?.uid
+            "idOwner" to _meetToAdd.idOwner,
         )
         //Add meetToAdd in firestore database
         db.collection("meets").add(meetToAdd)
@@ -81,6 +86,24 @@ class MeetsViewModel : ViewModel() {
         //Asignar tambien que se ha unido a la meet
         val mvm = MeetViewModel()
         mvm.assingJoinedMeet(meet)
+    }
+
+    public fun deleteMeet(_meetToDelete: MeetModel) {
+        db.collection("meets").document(_meetToDelete.id!!).delete()
+            .addOnSuccessListener {
+                meets.value?.remove(_meetToDelete)
+                meets.notifyObserver()
+                deleteAssignedMeet(_meetToDelete)
+                Log.d(ContentValues.TAG, "DocumentSnapshot successfully deleted!")
+            }
+            .addOnFailureListener { e ->
+                Log.w(ContentValues.TAG, "Error deleting document", e)
+            }
+    }
+
+    private fun deleteAssignedMeet(meet:MeetModel){
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        db.collection("users").document(userId!!).update("OwnerMeets", FieldValue.arrayRemove(meet.id!!))
     }
 
     fun MutableLiveData<*>.notifyObserver() {

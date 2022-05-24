@@ -17,26 +17,26 @@ class MeetViewModel : ViewModel() {
     var db = FirebaseFirestore.getInstance()
     public fun getMeetById(id: String) {
         //Get meet from firestore by id
-        var meetPlace: MeetModel? = null
-
         db.collection("meets").document(id).get()
             .addOnSuccessListener { document ->
                 if (document != null) {
                     val dateTime = document.get("dateTime") as Timestamp
                     val geoPoint = document.getGeoPoint("position")
                     val position = LatLng(geoPoint?.latitude ?: 0.0, geoPoint?.longitude ?: 0.0)
+                    val peopleInMeet = document.get("peopleInMeet") as ArrayList<String>?
+                    val idOwner = document.get("idOwner") as String
 
                     //Init MeetModel with data from firebase
-                    meetPlace = MeetModel(
+                    val _meet = MeetModel(
                         document.id,
                         document.get("title").toString(),
                         dateTime.toDate(),
                         document.get("description").toString(),
-                        position
+                        position,
+                        idOwner,
+                        peopleInMeet
                     )
-                    meetPlace?.let {
-                        meet.value = it
-                    }
+                    meet.value = _meet
                 }
             }
             .addOnFailureListener { exception ->
@@ -53,9 +53,8 @@ class MeetViewModel : ViewModel() {
             val usersList = arrayListOf<String>()
             usersList.add(userID)
             val hashMap = hashMapOf(
-                "users" to usersList
+                "peopleInMeet" to usersList
             )
-
             documentReference.set(hashMap, SetOptions.merge())
                 //Asignar el user la Meet donde acaba de unirse
                 .addOnSuccessListener {
@@ -73,6 +72,12 @@ class MeetViewModel : ViewModel() {
         )
         db.collection("users").document(FirebaseAuth.getInstance().currentUser?.uid!!)
             .set(ownerMeets)
+    }
+
+    public fun checkOwnerMeet(meet: MeetModel):Boolean
+    {
+        val userID = FirebaseAuth.getInstance().currentUser?.uid!!
+        return userID == meet.idOwner
     }
 
 

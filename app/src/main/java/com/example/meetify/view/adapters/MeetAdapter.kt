@@ -10,6 +10,8 @@ import com.example.meetify.MeetActivity
 import com.example.meetify.R
 import com.example.meetify.databinding.ItemMeetBinding
 import com.example.meetify.model.MeetModel
+import com.example.meetify.viewmodel.MeetViewModel
+import com.example.meetify.viewmodel.MeetsViewModel
 
 
 class MeetAdapter(var meetList: List<MeetModel>) : RecyclerView.Adapter<MeetAdapter.MeetHolder>() {
@@ -19,7 +21,8 @@ class MeetAdapter(var meetList: List<MeetModel>) : RecyclerView.Adapter<MeetAdap
 
         fun render(meet: MeetModel) {
             binding.tvtitle.text = meet.title
-            binding.tvPeopleCount.text = 100.toString()
+            val peopleInMeet = meet.peopleJoined?.size ?: 0
+            binding.tvPeopleCount.text =peopleInMeet.toString()
 
             //Set datetime to tvHour
             val dateTimeString = DateUtils.formatDateTime(view.context, meet.dateTime?.time ?:0L, DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_DATE)
@@ -27,6 +30,8 @@ class MeetAdapter(var meetList: List<MeetModel>) : RecyclerView.Adapter<MeetAdap
 
             //Join Button
             binding.btnJoinMeet.setOnClickListener {
+                val mvm = MeetViewModel()
+                mvm.joinMeet(meet)
 
             }
             //View Click

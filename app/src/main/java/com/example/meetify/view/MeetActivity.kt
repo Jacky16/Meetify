@@ -3,12 +3,16 @@ package com.example.meetify
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.format.DateUtils
+import android.transition.Visibility
+import android.view.View
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.meetify.databinding.ActivityMeetBinding
 import com.example.meetify.model.MeetModel
 import com.example.meetify.viewmodel.MeetViewModel
+import com.example.meetify.viewmodel.MeetsViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -22,6 +26,8 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback {
     var currentMeet: MeetModel? = null
     lateinit var recyclerView: RecyclerView
     val meetModelView: MeetViewModel by viewModels()
+    val meetsModelView: MeetsViewModel by viewModels()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,12 +46,33 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback {
         binding.btnBack.setOnClickListener {
             finish()
         }
+
+        //Button delete
+        deleteMeet()
         joinMeet()
 
 
+    }
+
+    private fun deleteMeet() {
+        //Check if is the owner of the meet
+        currentMeet?.let { _meetToDelete ->
+            binding.btnDelete.setOnClickListener {
+                meetsModelView.deleteMeet(_meetToDelete)
+                Toast.makeText(this, "Meet deleted", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }
 
     }
-    private fun joinMeet(){
+
+    private fun setVisibleDeleteButton() {
+        if (meetModelView.checkOwnerMeet(currentMeet!!)) {
+            binding.btnDelete.visibility = View.VISIBLE
+        }
+    }
+
+    private fun joinMeet() {
         binding.btnJoinIn.setOnClickListener {
             currentMeet?.let {
                 meetModelView.joinMeet(it)
@@ -70,13 +97,19 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback {
             addMarkerToMeet()
             moveCameraToMeet()
             initInfoMeet()
+            deleteMeet()
+            setVisibleDeleteButton()
         }
     }
 
     private fun initInfoMeet() {
         binding.tvTitleMeet.text = currentMeet?.title.toString()
         //Set the hour of the meet with formatter am/pm
-        val dateTimeString = DateUtils.formatDateTime(this, currentMeet?.dateTime?.time ?:0L, DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_YEAR)
+        val dateTimeString = DateUtils.formatDateTime(
+            this,
+            currentMeet?.dateTime?.time ?: 0L,
+            DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_YEAR
+        )
         binding.tvHourMeet.text = dateTimeString
 
         binding.tvDescMeet.text = currentMeet?.description.toString()

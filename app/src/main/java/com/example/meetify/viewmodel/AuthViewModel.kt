@@ -23,6 +23,7 @@ class AuthViewModel : ViewModel() {
                     //Setear el nickName
                     it.displayName?.let { nickName -> UserModel.setNickname(nickName) }
 
+                    saveUserDataOnFirestore()
                     onLogin()
 
                 }

@@ -48,7 +48,7 @@ class RegisterActivity : AppCompatActivity() {
                         binding.editTextEmail.text.toString(),
                         binding.editTextPassword.text.toString()
                     ) {
-                        startActivity(Intent(this, MainActivity::class.java))
+                        startActivity(Intent(this, LoginActivity::class.java))
                         finish()
                     }
             }

@@ -27,6 +27,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.firebase.auth.FirebaseAuth
 import com.google.maps.android.clustering.ClusterManager
 import java.text.SimpleDateFormat
 import java.util.*
@@ -105,10 +106,10 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
             val descriptionMeet = binding.bsCreateMeetInclude.titlDescriptionMeet.text.toString()
 
             dateTime?.let { _dateTime ->
-                addMeetToListAndMap(MeetModel(titleMeet,_dateTime,descriptionMeet,locationToAdd))
+                addMeetToListAndMap(MeetModel(titleMeet,_dateTime,descriptionMeet,locationToAdd,FirebaseAuth.getInstance().currentUser!!.uid))
             }
 
-            meetsViewModel.addMeet(MeetModel(titleMeet,dateTime,descriptionMeet,locationToAdd))
+            meetsViewModel.addMeet(MeetModel(titleMeet,dateTime,descriptionMeet,locationToAdd,FirebaseAuth.getInstance().currentUser!!.uid))
         }
         //Cancel Button
         binding.bsCreateMeetInclude.btnCancelCreateMeet.setOnClickListener {
