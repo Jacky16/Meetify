@@ -2,6 +2,8 @@ package com.example.meetify.viewmodel
 
 import android.content.ContentValues
 import android.util.Log
+import android.view.View
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.meetify.model.MeetModel
@@ -37,6 +39,7 @@ class MeetViewModel : ViewModel() {
                         peopleInMeet
                     )
                     meet.value = _meet
+
                 }
             }
             .addOnFailureListener { exception ->
@@ -45,7 +48,7 @@ class MeetViewModel : ViewModel() {
 
     }
 
-    public fun joinMeet(_meet: MeetModel) {
+    public fun joinMeet(_meet: MeetModel,view: View? = null) {
         val userID = FirebaseAuth.getInstance().currentUser?.uid
         val documentReference = db.collection("meets").document(_meet.id!!)
 
@@ -58,6 +61,9 @@ class MeetViewModel : ViewModel() {
             documentReference.set(hashMap, SetOptions.merge())
                 //Asignar el user la Meet donde acaba de unirse
                 .addOnSuccessListener {
+                    view?.let {
+                        Toast.makeText(it.context, "You've joined", Toast.LENGTH_SHORT).show()
+                    }
                     assingJoinedMeet(_meet)
                 }
 

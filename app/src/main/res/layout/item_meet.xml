@@ -14,8 +14,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/meet_card_background"
-        android:paddingEnd="8dp"
-       >
+        android:paddingEnd="8dp">
+
+        <com.google.android.gms.maps.MapView
+            android:id="@+id/mapFragment"
+            android:name="com.google.android.gms.maps.MapView"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tvtitle"
@@ -28,7 +36,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Plaza Cataluña"/>
+            tools:text="Plaza Cataluña" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout2"
