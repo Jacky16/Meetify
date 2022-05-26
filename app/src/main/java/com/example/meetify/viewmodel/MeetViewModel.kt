@@ -7,13 +7,12 @@ import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.meetify.model.MeetModel
-import com.example.meetify.model.UserModel
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
-import java.util.ArrayList
 
 class MeetViewModel : ViewModel() {
     var meet: MutableLiveData<MeetModel> = MutableLiveData()
@@ -54,18 +53,14 @@ class MeetViewModel : ViewModel() {
         val documentReference = db.collection("meets").document(_meet.id!!)
 
         userID?.let {
-            val usersList = arrayListOf<String>()
-            usersList.add(userID)
-            val hashMap = hashMapOf(
-                "peopleInMeet" to usersList
-            )
-            documentReference.set(hashMap, SetOptions.merge())
+            val addUserToArrayMap= HashMap<String, Any> ()
+            addUserToArrayMap.put("peopleInMeet", FieldValue.arrayUnion(userID))
+            documentReference.update(addUserToArrayMap)
                 //Asignar el user la Meet donde acaba de unirse
                 .addOnSuccessListener {
                     view?.let {
                         Toast.makeText(it.context, "You've joined", Toast.LENGTH_SHORT).show()
                     }
-                    assingJoinedMeet(_meet)
                 }
 
         }
