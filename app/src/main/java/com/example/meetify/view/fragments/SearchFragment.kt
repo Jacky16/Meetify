@@ -40,12 +40,13 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
 
     lateinit var binding: SearchFragmentBinding
     val meetsViewModel: MeetsViewModel by viewModels()
+
     //Google maps variables
     var googleMap: GoogleMap? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var currentLocation: LatLng? = null
     private var clusterManager: ClusterManager<MyMeetCluster?>? = null
-    lateinit var locationToAdd:LatLng
+    lateinit var locationToAdd: LatLng
     val meetViewModel: MeetViewModel by viewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -71,7 +72,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
         //Create Meet Manager
         bottomSheetCreateMeetManager()
         meetsViewModel.getMeets()
-        meetsViewModel.meets.observe(viewLifecycleOwner){
+        meetsViewModel.meets.observe(viewLifecycleOwner) {
             addMarkersMeets()
         }
     }
@@ -95,10 +96,11 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
     //region BottomSheet Create Meet functions
     private fun bottomSheetCreateMeetManager() {
         //Get current date with Date data
-        val dateTime:Date = Calendar.getInstance().time
+        val dateTime: Date = Calendar.getInstance().time
 
         //Button Done
         binding.bsCreateMeetInclude.btnCreateMeet.setOnClickListener {
+            if(!checkInputsCreateMeet()) return@setOnClickListener
             BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
                 this.state = BottomSheetBehavior.STATE_HIDDEN
             }
@@ -110,15 +112,32 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
             val descriptionMeet = binding.bsCreateMeetInclude.titlDescriptionMeet.text.toString()
 
             dateTime?.let { _dateTime ->
-                addMeetToListAndMap(MeetModel(titleMeet,_dateTime,descriptionMeet,locationToAdd,FirebaseAuth.getInstance().currentUser!!.uid))
+                addMeetToListAndMap(
+                    MeetModel(
+                        titleMeet,
+                        _dateTime,
+                        descriptionMeet,
+                        locationToAdd,
+                        FirebaseAuth.getInstance().currentUser!!.uid
+                    )
+                )
             }
 
-            meetsViewModel.addMeet(MeetModel(titleMeet,dateTime,descriptionMeet,locationToAdd,FirebaseAuth.getInstance().currentUser!!.uid))
+            meetsViewModel.addMeet(
+                MeetModel(
+                    titleMeet,
+                    dateTime,
+                    descriptionMeet,
+                    locationToAdd,
+                    FirebaseAuth.getInstance().currentUser!!.uid
+                )
+            )
         }
         //Cancel Button
         binding.bsCreateMeetInclude.btnCancelCreateMeet.setOnClickListener {
             BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
                 this.state = BottomSheetBehavior.STATE_HIDDEN
+                checkInputsCreateMeet()
             }
         }
 
@@ -136,6 +155,8 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
                 dateTime.month,
                 dateTime.date
             )
+            //Can't select past dates
+            datePicker.datePicker.minDate = System.currentTimeMillis()
             datePicker.show()
         }
 
@@ -209,8 +230,9 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
 
         }
     }
+
     private fun deleteMeet(meet: MeetModel) {
-        if(meetViewModel.checkOwnerMeet(meet)){
+        if (meetViewModel.checkOwnerMeet(meet)) {
             binding.bsInfoMeetInclude.btnDelete.visibility = View.VISIBLE
         }
         binding.bsInfoMeetInclude.btnDelete.setOnClickListener {
@@ -218,18 +240,20 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
             clusterManager?.removeItem(MyMeetCluster(meet))
             clusterManager?.cluster()
             collapseBottomSheetInfoMeet()
-            Toast.makeText(requireContext(),"Meet Deleted",Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Meet Deleted", Toast.LENGTH_SHORT).show()
 
 
         }
 
     }
-    private fun joinMeet(meet:MeetModel){
+
+    private fun joinMeet(meet: MeetModel) {
         binding.bsInfoMeetInclude.btnJoinIn.setOnClickListener {
             meetViewModel.joinMeet(meet)
-            Toast.makeText(requireContext(),"You joined the meet",Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "You joined the meet", Toast.LENGTH_SHORT).show()
         }
     }
+
     private fun setInfoOnBottomSheetMeet(item: MyMeetCluster?) {
         item?.getMeet()?.let {
             val dateTimeString = DateUtils.formatDateTime(
@@ -334,7 +358,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
     }
 
     private fun addMarkersMeets() {
-        meetsViewModel.meets.observe(viewLifecycleOwner){ listMeets ->
+        meetsViewModel.meets.observe(viewLifecycleOwner) { listMeets ->
             clusterManager?.clearItems()
             listMeets.forEach {
                 val meet = it
@@ -390,5 +414,40 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
     }
 
     //endregion FU functions_functions
+
+    private fun checkInputsCreateMeet(): Boolean {
+        if (binding.bsCreateMeetInclude.titlNameMeet.text.toString().isEmpty()) {
+            binding.bsCreateMeetInclude.titlNameMeet.error = "Please enter a title"
+            return false
+        }
+        if(binding.bsCreateMeetInclude.titlDescriptionMeet.text.toString().isEmpty()){
+            binding.bsCreateMeetInclude.titlDescriptionMeet.error = "Please enter a description"
+            return false
+        }
+        if(binding.bsCreateMeetInclude.titlDate.text.toString().isEmpty()){
+            binding.bsCreateMeetInclude.titlDate.error = "Please enter a date"
+            return false
+        }
+        if(binding.bsCreateMeetInclude.titlHour.text.toString().isEmpty()){
+            binding.bsCreateMeetInclude.titlHour.error = "Please enter a hour"
+            return false
+        }
+        //Clear Errors
+        binding.bsCreateMeetInclude.titlNameMeet.error = null
+        binding.bsCreateMeetInclude.titlDescriptionMeet.error = null
+        binding.bsCreateMeetInclude.titlDate.error = null
+        binding.bsCreateMeetInclude.titlHour.error = null
+
+        clearTextSheetCreator()
+        return true
+    }
+
+    private fun clearTextSheetCreator() {
+        //Clear text
+        binding.bsCreateMeetInclude.titlNameMeet.text?.clear()
+        binding.bsCreateMeetInclude.titlDescriptionMeet.text?.clear()
+        binding.bsCreateMeetInclude.titlDate.text?.clear()
+        binding.bsCreateMeetInclude.titlHour.text?.clear()
+    }
 
 }
