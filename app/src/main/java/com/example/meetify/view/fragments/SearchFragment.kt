@@ -1,4 +1,4 @@
-package com.example.meetify.view
+package com.example.meetify.view.fragments
 
 import android.Manifest
 import android.app.DatePickerDialog

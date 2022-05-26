@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.meetify.model.MeetModel
+import com.example.meetify.model.UserModel
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -48,7 +49,7 @@ class MeetViewModel : ViewModel() {
 
     }
 
-    public fun joinMeet(_meet: MeetModel,view: View? = null) {
+    public fun joinMeet(_meet: MeetModel, view: View? = null) {
         val userID = FirebaseAuth.getInstance().currentUser?.uid
         val documentReference = db.collection("meets").document(_meet.id!!)
 
@@ -71,20 +72,28 @@ class MeetViewModel : ViewModel() {
     }
 
     public fun assingJoinedMeet(_meet: MeetModel) {
-        val listJoinedMeets = ArrayList<String>()
-        listJoinedMeets.add(_meet.id!!)
-        val ownerMeets = hashMapOf(
-            "ownerMeets" to listJoinedMeets
+       //Update array of joined meets
+        val userID = FirebaseAuth.getInstance().currentUser?.uid
+        val documentReference = db.collection("meets").document(_meet.id!!)
+        var usersList = arrayListOf<String>()
+        //Get people in meet
+        documentReference.get()
+
+        //Add new owner to list
+        val hashMap = hashMapOf(
+            "peopleInMeet" to usersList
         )
-        db.collection("users").document(FirebaseAuth.getInstance().currentUser?.uid!!)
-            .set(ownerMeets)
+        documentReference.set(hashMap, SetOptions.merge())
     }
 
-    public fun checkOwnerMeet(meet: MeetModel):Boolean
-    {
+    public fun checkOwnerMeet(meet: MeetModel): Boolean {
         val userID = FirebaseAuth.getInstance().currentUser?.uid!!
         return userID == meet.idOwner
     }
 
+    public fun getPeopleInMeet(meet: MeetModel) {
+
+
+    }
 
 }

@@ -76,6 +76,7 @@ class MeetsViewModel : ViewModel() {
                 Log.w(ContentValues.TAG, "Error adding document", e)
             }
     }
+
     public fun deleteMeet(_meetToDelete: MeetModel) {
         db.collection("meets").document(_meetToDelete.id!!).delete()
             .addOnSuccessListener {
@@ -89,13 +90,23 @@ class MeetsViewModel : ViewModel() {
                 Log.w(ContentValues.TAG, "Error deleting document", e)
             }
     }
-    private fun assingOwnerMeet(meet:MeetModel){
+
+    private fun assingOwnerMeet(meet: MeetModel) {
         val listOwnerMeets = ArrayList<String>()
         listOwnerMeets.add(meet.id!!)
-        val ownerMeets = hashMapOf(
-            "ownerMeets" to listOwnerMeets
+
+        //Update array of ownerMeets in firestore database
+        db.collection("users").document(meet.idOwner!!).set(
+            mutableMapOf(
+                "ownerMeets" to listOwnerMeets
+            ),SetOptions.merge()
         )
-        db.collection("users").document(FirebaseAuth.getInstance().currentUser?.uid!!).set(ownerMeets)
+            .addOnSuccessListener {
+                Log.d(ContentValues.TAG, "DocumentSnapshot successfully updated!")
+            }
+            .addOnFailureListener { e ->
+                Log.w(ContentValues.TAG, "Error updating document", e)
+            }
 
         //Asignar tambien que se ha unido a la meet
         val mvm = MeetViewModel()
@@ -103,10 +114,10 @@ class MeetsViewModel : ViewModel() {
     }
 
 
-
-    private fun deleteAssignedMeet(meet:MeetModel){
+    private fun deleteAssignedMeet(meet: MeetModel) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
-        db.collection("users").document(userId!!).update("ownerMeets", FieldValue.arrayRemove(meet.id!!))
+        db.collection("users").document(userId!!)
+            .update("ownerMeets", FieldValue.arrayRemove(meet.id!!))
     }
 
     fun MutableLiveData<*>.notifyObserver() {

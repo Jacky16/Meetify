@@ -1,4 +1,4 @@
-package com.example.meetify.view
+package com.example.meetify.view.fragments
 
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle

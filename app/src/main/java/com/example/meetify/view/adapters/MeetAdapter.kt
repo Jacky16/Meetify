@@ -72,6 +72,7 @@ class MeetAdapter(var meetList: List<MeetModel>) : RecyclerView.Adapter<MeetAdap
         override fun onMapReady(p0: GoogleMap) {
             MapsInitializer.initialize(view.context)
             mapCurrent = p0
+            mapCurrent?.uiSettings?.setAllGesturesEnabled(false)
 
         }
 

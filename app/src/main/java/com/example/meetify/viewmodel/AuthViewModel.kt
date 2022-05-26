@@ -16,16 +16,8 @@ class AuthViewModel : ViewModel() {
                 val currUser = FirebaseAuth.getInstance().currentUser
 
                 currUser?.let {
-
-                    //Setear el id
-                    UserModel.setUserId(it.uid)
-
-                    //Setear el nickName
-                    it.displayName?.let { nickName -> UserModel.setNickname(nickName) }
-
                     saveUserDataOnFirestore()
                     onLogin()
-
                 }
             }.addOnFailureListener {
 
@@ -43,23 +35,22 @@ class AuthViewModel : ViewModel() {
 
                 currUser?.let { user ->
                     currUser.updateProfile(profileUpdates).addOnSuccessListener {
-                        UserModel.setUserId(currUser.uid)
-                        user.displayName?.let { nickName -> UserModel.setNickname(nickName) }
                         saveUserDataOnFirestore()
+                        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
+                        onSignUp()
                     }
                 }
-                FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
-                onSignUp()
-            }.addOnFailureListener {
-                //Debug it
-                Log.e("AuthViewModel", "Error: ${it.message}")
-
             }
+    }
+
+    fun logOut() {
+        FirebaseAuth.getInstance().signOut()
     }
 
     fun isSinIn(): Boolean {
         return FirebaseAuth.getInstance().currentUser != null
     }
+
     private fun saveUserDataOnFirestore() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         currentUser?.let {
@@ -67,13 +58,12 @@ class AuthViewModel : ViewModel() {
                 "nickname" to it.displayName,
                 "userId" to it.uid,
                 "email" to it.email,
-                "photoUrl" to it.photoUrl.toString()
+                "photoUrl" to it.photoUrl.toString(),
+                "ownerMeets" to arrayListOf<String>(),
             )
             FirebaseFirestore.getInstance().collection("users").document(it.uid).set(userData)
         }
 
     }
-
-
 
 }
