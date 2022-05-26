@@ -100,18 +100,16 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
 
         //Button Done
         binding.bsCreateMeetInclude.btnCreateMeet.setOnClickListener {
-            if(!checkInputsCreateMeet()) return@setOnClickListener
-            BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
-                this.state = BottomSheetBehavior.STATE_HIDDEN
-            }
+
 
             // Get Name
             val titleMeet = binding.bsCreateMeetInclude.titlNameMeet.text.toString()
 
             //Get Description
-            val descriptionMeet = binding.bsCreateMeetInclude.titlDescriptionMeet.text.toString()
+            val descriptionMeet =
+                binding.bsCreateMeetInclude.titlDescriptionMeet.text.toString()
 
-            dateTime?.let { _dateTime ->
+            dateTime.let { _dateTime ->
                 addMeetToListAndMap(
                     MeetModel(
                         titleMeet,
@@ -122,16 +120,21 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
                     )
                 )
             }
-
-            meetsViewModel.addMeet(
-                MeetModel(
-                    titleMeet,
-                    dateTime,
-                    descriptionMeet,
-                    locationToAdd,
-                    FirebaseAuth.getInstance().currentUser!!.uid
+            if (checkInputsCreateMeet()) {
+                meetsViewModel.addMeet(
+                    MeetModel(
+                        titleMeet,
+                        dateTime,
+                        descriptionMeet,
+                        locationToAdd,
+                        FirebaseAuth.getInstance().currentUser!!.uid
+                    )
                 )
-            )
+                //Collapse BottomSheet
+                BottomSheetBehavior.from(binding.bsCreateMeetInclude.bsCreateMeet).apply {
+                    this.state = BottomSheetBehavior.STATE_HIDDEN
+                }
+            }
         }
         //Cancel Button
         binding.bsCreateMeetInclude.btnCancelCreateMeet.setOnClickListener {
@@ -179,6 +182,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
             )
             timePicker.show()
         }
+
     }
 
     private fun addMeetToListAndMap(meet: MeetModel) {
@@ -420,15 +424,15 @@ class SearchFragment : Fragment(), OnMapReadyCallback,
             binding.bsCreateMeetInclude.titlNameMeet.error = "Please enter a title"
             return false
         }
-        if(binding.bsCreateMeetInclude.titlDescriptionMeet.text.toString().isEmpty()){
+        if (binding.bsCreateMeetInclude.titlDescriptionMeet.text.toString().isEmpty()) {
             binding.bsCreateMeetInclude.titlDescriptionMeet.error = "Please enter a description"
             return false
         }
-        if(binding.bsCreateMeetInclude.titlDate.text.toString().isEmpty()){
+        if (binding.bsCreateMeetInclude.titlDate.text.toString().isEmpty()) {
             binding.bsCreateMeetInclude.titlDate.error = "Please enter a date"
             return false
         }
-        if(binding.bsCreateMeetInclude.titlHour.text.toString().isEmpty()){
+        if (binding.bsCreateMeetInclude.titlHour.text.toString().isEmpty()) {
             binding.bsCreateMeetInclude.titlHour.error = "Please enter a hour"
             return false
         }

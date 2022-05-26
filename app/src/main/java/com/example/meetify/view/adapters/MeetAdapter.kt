@@ -75,8 +75,6 @@ class MeetAdapter(var meetList: List<MeetModel>) : RecyclerView.Adapter<MeetAdap
             mapCurrent?.uiSettings?.setAllGesturesEnabled(false)
 
         }
-
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MeetHolder {
@@ -87,10 +85,6 @@ class MeetAdapter(var meetList: List<MeetModel>) : RecyclerView.Adapter<MeetAdap
     override fun onBindViewHolder(holder: MeetHolder, position: Int) {
         holder.render(meetList[position])
        //Move camera to meet position
-
-
-
-
 
     }
 

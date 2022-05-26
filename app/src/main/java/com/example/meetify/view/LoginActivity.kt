@@ -21,7 +21,7 @@ class LoginActivity : AppCompatActivity() {
         createAccount()
         logIn()
         //Sing out of firebase
-        FirebaseAuth.getInstance().signOut()
+        //FirebaseAuth.getInstance().signOut()
 
         if(viewModel.isSinIn()){
             loadMainActivity()
